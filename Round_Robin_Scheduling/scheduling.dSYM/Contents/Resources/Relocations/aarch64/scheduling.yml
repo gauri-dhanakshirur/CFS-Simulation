@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/gauridhanakshirur/Round_Robin_Scheduling/scheduling'
+relocations:     []
+...

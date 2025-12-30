@@ -114,7 +114,7 @@ make
 ```
 
 ### Algorithm IDs
-![alt text](image.png)
+<img width="219" height="374" alt="image" src="https://github.com/user-attachments/assets/96600166-892e-40f4-9a33-ea88224ce111" />
 
 ## NOTE
 Follow the prompts to enter process details.

@@ -74,7 +74,7 @@ This project includes automation scripts to handle building and running the code
 ./run.sh
 
 # OR run a specific algorithm immediately (e.g., CFS)
-.\run.sh 9
+./run.sh 9
 ```
 
 ## Manual Build Instructions (If you prefer manually using cmake)

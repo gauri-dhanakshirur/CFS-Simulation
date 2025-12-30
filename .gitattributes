@@ -1,0 +1,5 @@
+# Enforce LF (Linux style) for shell scripts, even on Windows
+*.sh text eol=lf
+
+# Enforce CRLF (Windows style) for batch files, even on Linux
+*.bat text eol=crlf

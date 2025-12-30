@@ -55,11 +55,6 @@ scheduler_project/
     └── rms.c
 ```
 
-## Prerequisites
-
-* **C Compiler:** GCC, Clang, or MSVC (Visual Studio)
-* **Build Tool:** [CMake](https://cmake.org/download/) (Version 3.10 or higher)
-
 ## Quick Start (Recommended)
 
 This project includes automation scripts to handle building and running the code in one step.
@@ -84,6 +79,10 @@ This project includes automation scripts to handle building and running the code
 
 ## Manual Build Instructions (If you prefer manually using cmake)
 
+### Prerequisites
+* **C Compiler:** GCC, Clang, or MSVC (Visual Studio)
+* **Build Tool:** [CMake](https://cmake.org/download/) (Version 3.10 or higher)
+  
 ### Windows (Visual Studio / PowerShell)
 1.  Open a terminal in the project root.
 2.  Create a build directory:

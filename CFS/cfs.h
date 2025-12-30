@@ -1,5 +1,8 @@
-#include "process_def.h"
+#include "common.h"
 
+#define BASE_WEIGHT 1024
+
+// --- AVL Tree Definitions ---
 typedef struct Node {
     Process *process;
     struct Node *left;
@@ -19,8 +22,12 @@ Node *leftRotate(Node *x);
 
 int getBalance(Node *N);
 
+// Insert based on vruntime
 Node* insert(Node* node, Process *p);
 
 Node *minValueNode(Node* node);
 
 Node* deleteNode(Node* root, Process *p);
+
+// --- CFS Simulation Logic ---
+void run_cfs(Process p[], int n);

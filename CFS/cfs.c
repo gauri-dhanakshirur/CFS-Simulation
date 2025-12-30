@@ -1,7 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "cfs_avl.h"
+#include "cfs.h"
 
+#define BASE_WEIGHT 1024
+
+// Priority to Weight Mapping
+static const int prio_to_weight[] = {88761, 29154, 9548, 3121, 1024, 335, 110, 35, 10, 2};
+
+// --- AVL Tree Definitions ---
 int height(Node *N) {
     if (N == NULL) return 0;
     return N->height;
@@ -45,8 +49,7 @@ int getBalance(Node *N) {
     return height(N->left) - height(N->right);
 }
 
-// Insert based on vruntime (min vruntime goes left)
-// If vruntimes are equal, use PID as tie-breaker to ensure unique nodes
+// Insert based on vruntime
 Node* insert(Node* node, Process *p) {
     if (node == NULL) return newNode(p);
 
@@ -55,7 +58,7 @@ Node* insert(Node* node, Process *p) {
     else if (p->vruntime > node->process->vruntime)
         node->right = insert(node->right, p);
     else {
-        // Vruntime is equal, tie-break with PID
+        // Tie-break with PID
         if (p->pid < node->process->pid)
             node->left = insert(node->left, p);
         else
@@ -65,26 +68,21 @@ Node* insert(Node* node, Process *p) {
     node->height = 1 + max_node(height(node->left), height(node->right));
     int balance = getBalance(node);
 
-    // LL Case
     if (balance > 1 && p->vruntime < node->left->process->vruntime)
         return rightRotate(node);
 
-    // RR Case
     if (balance < -1 && p->vruntime > node->right->process->vruntime)
         return leftRotate(node);
 
-    // LR Case
     if (balance > 1 && p->vruntime > node->left->process->vruntime) {
         node->left = leftRotate(node->left);
         return rightRotate(node);
     }
 
-    // RL Case
     if (balance < -1 && p->vruntime < node->right->process->vruntime) {
         node->right = rightRotate(node->right);
         return leftRotate(node);
     }
-
     return node;
 }
 
@@ -95,24 +93,20 @@ Node *minValueNode(Node* node) {
     return current;
 }
 
-// Delete a node (used when a process is picked to run)
 Node* deleteNode(Node* root, Process *p) {
     if (root == NULL) return root;
 
-    // Navigate to find the node
     if (p->vruntime < root->process->vruntime)
         root->left = deleteNode(root->left, p);
     else if (p->vruntime > root->process->vruntime)
         root->right = deleteNode(root->right, p);
     else {
-        // vruntime matches, check PID
         if (p->pid != root->process->pid) {
             if (p->pid < root->process->pid)
                 root->left = deleteNode(root->left, p);
             else
                 root->right = deleteNode(root->right, p);
         } else {
-            // Node found
             if ((root->left == NULL) || (root->right == NULL)) {
                 Node *temp = root->left ? root->left : root->right;
                 if (temp == NULL) {
@@ -136,19 +130,95 @@ Node* deleteNode(Node* root, Process *p) {
 
     if (balance > 1 && getBalance(root->left) >= 0)
         return rightRotate(root);
-
     if (balance > 1 && getBalance(root->left) < 0) {
         root->left = leftRotate(root->left);
         return rightRotate(root);
     }
-
     if (balance < -1 && getBalance(root->right) <= 0)
         return leftRotate(root);
-
     if (balance < -1 && getBalance(root->right) > 0) {
         root->right = rightRotate(root->right);
         return leftRotate(root);
     }
-
     return root;
+}
+
+// --- CFS Simulation Logic ---
+
+void run_cfs(Process p[], int n) {
+    printf("Starting Simulation (CFS Red-Black/AVL Tree)...\n");
+    reset_processes(p, n);
+
+    // Initialize Weights
+    for(int i=0; i<n; i++) {
+        // Clamp priority to array bounds 0-9
+        int safe_prio = p[i].priority;
+        if(safe_prio < 0) safe_prio = 0;
+        if(safe_prio > 9) safe_prio = 9;
+        p[i].weight = prio_to_weight[safe_prio];
+        p[i].vruntime = 0;
+    }
+
+    Node* root = NULL;
+    int current_time = 0;
+    int completed_count = 0;
+    Process* current_process = NULL;
+
+    // Simulation Loop (Adapted from your logic)
+    while (completed_count < n) {
+        
+        // A. Handle New Arrivals
+        for (int i = 0; i < n; i++) {
+            if (p[i].at == current_time) {
+                if (root != NULL) {
+                    Node* minNode = minValueNode(root);
+                    if (minNode) p[i].vruntime = minNode->process->vruntime;
+                }
+                root = insert(root, &p[i]);
+            }
+        }
+
+        // B. Preemption Check
+        if (current_process != NULL) {
+            root = insert(root, current_process);
+            current_process = NULL;
+        }
+
+        // C. Select Task
+        if (root != NULL) {
+            Node* minNode = minValueNode(root);
+            current_process = minNode->process;
+            root = deleteNode(root, current_process);
+
+            if (!current_process->started) {
+                current_process->start_time = current_time;
+                current_process->rt = current_time - current_process->at; // rt
+                current_process->started = true;
+            }
+        }
+
+        // D. Execute
+        if (current_process != NULL) {
+            current_process->rem_bt--; // Decrement remaining time
+            
+            double delta = 1.0 * (BASE_WEIGHT / current_process->weight);
+            current_process->vruntime += delta;
+
+            current_time++;
+
+            if (current_process->rem_bt == 0) {
+                current_process->ct = current_time;
+                current_process->tat = current_process->ct - current_process->at;
+                current_process->wt = current_process->tat - current_process->bt;
+                current_process->completed = true;
+                
+                completed_count++;
+                current_process = NULL; // Don't re-insert
+            }
+        } else {
+            current_time++;
+        }
+    }
+
+    print_table(p, n, "CFS Scheduling");
 }

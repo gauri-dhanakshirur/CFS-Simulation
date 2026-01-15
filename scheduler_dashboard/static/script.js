@@ -8,149 +8,62 @@ document.addEventListener('DOMContentLoaded', () => {
     const algoTitle = document.getElementById('algo-title');
     const menuItems = document.querySelectorAll('.menu-item');
     const extraParamHeader = document.querySelector('.extra-param-header');
+    
+    // Select the 4th header span (PID, Arrival, Burst, Priority)
+    const priorityHeader = document.querySelector('.table-header span:nth-child(4)');
+
     const tableOutput = document.getElementById('table-output');
     const metricsOutput = document.getElementById('metrics-output');
     const statusBadge = document.getElementById('status-badge');
-    
-    // Description Elements
     const algoDescText = document.getElementById('algo-desc-text');
     const algoFormula = document.getElementById('algo-formula');
 
-    // --- Algorithm Content Definitions ---
+    // --- Algorithm Content ---
     const ALGO_CONTENT = {
         'cfs': {
             title: 'Completely Fair Scheduler (CFS)',
-            desc: `
-                <p>The Completely Fair Scheduler (CFS) is the default process scheduler for the Linux kernel. It aims to model an "ideal, precise multi-tasking CPU" on real hardware. Unlike traditional schedulers that use fixed time slices, CFS tries to divide CPU time among all tasks proportionally based on their weights.</p>
-                <p>It maintains a <b>red-black tree</b> timeline of tasks ordered by their <i>virtual runtime</i> (vruntime). The task with the lowest vruntime (the one that has received the least fair share of the CPU) is always picked next. As a task runs, its vruntime increases; if it runs too long, it moves to the right of the tree, giving other tasks a chance. This ensures fairness and inherently handles I/O bound tasks efficiently without complex heuristics.</p>
-            `,
-            formula: `
-                <strong>vruntime<sub>i</sub> += &Delta;exec &times; <span class="fraction">(W<sub>base</sub> / W<sub>i</sub>)</span></strong>
-                <ul class="var-list">
-                    <li><b>vruntime<sub>i</sub></b>: The virtual runtime of process <i>i</i>.</li>
-                    <li><b>&Delta;exec</b>: The actual physical time the process ran.</li>
-                    <li><b>W<sub>base</sub></b>: The weight of a standard priority process (usually 1024).</li>
-                    <li><b>W<sub>i</sub></b>: The weight of process <i>i</i> (derived from its priority/niceness).</li>
-                </ul>
-            `
+            desc: `<p>The Completely Fair Scheduler (CFS) models an "ideal, precise multi-tasking CPU". It tracks <i>virtual runtime</i> (vruntime) via a red-black tree. The task with the lowest vruntime is picked next. Priorities are mapped to weights: higher weight (lower nice value) slows down vruntime growth, granting more CPU time.</p>`,
+            formula: `<strong>vruntime += &Delta;exec &times; (W<sub>base</sub> / W<sub>i</sub>)</strong>`
         },
         'edf': {
             title: 'Earliest Deadline First (EDF)',
-            desc: `
-                <p>Earliest Deadline First (EDF) is a dynamic priority scheduling algorithm used primarily in real-time operating systems. It assigns priorities to tasks based on their absolute deadlines. The task with the closest deadline is given the highest priority and is executed first.</p>
-                <p>EDF is an <b>optimal</b> uniprocessor scheduling algorithm, meaning if a set of tasks is schedulable by any algorithm, it is schedulable by EDF. It is a preemptive algorithm; if a new task arrives with a deadline closer than the currently running task, the running task is preempted.</p>
-            `,
-            formula: `
-                <strong>Priority(P<sub>i</sub>) &propto; 1 / D<sub>abs</sub></strong>
-                <br>where <strong>D<sub>abs</sub> = T<sub>arrival</sub> + T<sub>relative_deadline</sub></strong>
-                <ul class="var-list">
-                    <li><b>D<sub>abs</sub></b>: Absolute Deadline (specific point in time).</li>
-                    <li><b>T<sub>arrival</sub></b>: The time at which the process entered the system.</li>
-                    <li><b>T<sub>relative</sub></b>: The time duration within which the task must complete.</li>
-                </ul>
-            `
+            desc: `<p>EDF is a dynamic priority real-time algorithm. It prioritizes tasks with the closest <b>Absolute Deadline</b>. If a new task arrives with a sooner deadline than the current one, preemption occurs.</p>`,
+            formula: `<strong>Priority &propto; 1 / (T<sub>arrival</sub> + T<sub>deadline</sub>)</strong>`
         },
         'fcfs': {
             title: 'First Come First Serve (FCFS)',
-            desc: `
-                <p>First Come First Serve (FCFS) is the simplest scheduling algorithm. Processes are dispatched to the CPU in the exact order they arrive in the ready queue, much like a grocery store checkout line. It is a <b>non-preemptive</b> algorithm, meaning once a process starts running, it continues until it terminates or performs I/O.</p>
-                <p>While easy to implement, FCFS suffers from the <i>Convoy Effect</i>: if a CPU-intensive process arrives first, many short I/O-bound processes effectively get stuck waiting behind it, leading to high average waiting times and poor device utilization.</p>
-            `,
-            formula: `
-                <strong>WT<sub>i</sub> = T<sub>start</sub> - T<sub>arrival</sub></strong>
-                <ul class="var-list">
-                    <li><b>WT<sub>i</sub></b>: Waiting Time for process <i>i</i>.</li>
-                    <li><b>T<sub>start</sub></b>: The time when the process first gets the CPU.</li>
-                    <li><b>T<sub>arrival</sub></b>: The time when the process arrived in the queue.</li>
-                </ul>
-            `
+            desc: `<p>FCFS executes processes strictly in the order of their arrival. It is simple but suffers from the "Convoy Effect" where short processes wait behind long ones.</p>`,
+            formula: `<strong>Wait = T<sub>start</sub> - T<sub>arrival</sub></strong>`
         },
         'mlfq': {
             title: 'Multi-Level Feedback Queue (MLFQ)',
-            desc: `
-                <p>The Multi-Level Feedback Queue (MLFQ) is designed to optimize both turnaround time and response time without knowing process burst times in advance. It uses multiple distinct queues, each with a different priority level and time quantum.</p>
-                <p>New processes enter the highest priority queue (short time slice). If a process uses its entire time slice, it is assumed to be CPU-bound and is demoted to a lower priority queue. If it gives up the CPU voluntarily (I/O), it stays at the same level. This naturally separates interactive processes (high priority) from background batch jobs (low priority).</p>
-            `,
-            formula: `
-                <strong>Rule 1: If Priority(A) > Priority(B), Run A.</strong><br>
-                <strong>Rule 2: If Priority(A) = Priority(B), Run RR.</strong>
-                <ul class="var-list">
-                    <li><b>Demotion:</b> Occurs if <i>Time<sub>spent</sub></i> > <i>Time_Quantum</i>.</li>
-                    <li><b>Aging:</b> Periodically boost all processes to top queue to prevent starvation.</li>
-                </ul>
-            `
+            desc: `<p>MLFQ uses multiple queues with different priorities and time slices. Processes start at the top. If they use their full time slice, they are demoted. This favors interactive (I/O) jobs over CPU-bound jobs.</p>`,
+            formula: `<strong>If T<sub>cpu</sub> > TQ, Demote(P)</strong>`
         },
         'priority': {
             title: 'Preemptive Priority Scheduling',
-            desc: `
-                <p>In Priority Scheduling, each process is assigned a numerical priority. The CPU is allocated to the process with the highest priority currently in the ready queue. In this simulation, we follow the convention that a <b>lower number indicates higher priority</b> (e.g., 0 is highest).</p>
-                <p>Because this is the <i>preemptive</i> version, if a newly arrived process has a higher priority than the currently running process, the scheduler immediately stops the current process and switches to the new one. A major drawback is <i>indefinite blocking</i> (starvation), where low-priority tasks may never execute if high-priority tasks keep arriving.</p>
-            `,
-            formula: `
-                <strong>Select P<sub>i</sub> such that Prio(P<sub>i</sub>) = min(Prio(P<sub>all</sub>))</strong>
-                <ul class="var-list">
-                    <li><b>Prio(P)</b>: The priority value assigned to the process.</li>
-                    <li><b>min(...)</b>: Selecting the minimum value (highest priority).</li>
-                </ul>
-            `
+            desc: `<p>The CPU is assigned to the process with the highest priority (lowest number). If a higher priority process arrives, the current one is preempted.</p>`,
+            formula: `<strong>Min(Priority Value) = Highest Priority</strong>`
         },
         'propshare': {
-            title: 'Proportional Share (Lottery Scheduling)',
-            desc: `
-                <p>Proportional Share scheduling, often implemented as Lottery Scheduling, is based on the concept of sharing the CPU in proportion to the importance of the tasks. Each process is issued a certain number of "tickets" (represented here by the priority field).</p>
-                <p>At every scheduling decision point (time slice), the scheduler holds a probabilistic lottery. It picks a random ticket number, and the process holding that ticket wins the CPU. Over time, the percentage of CPU time a process gets will statistically match the percentage of total tickets it holds.</p>
-            `,
-            formula: `
-                <strong>P(win) = Tickets<sub>i</sub> / Tickets<sub>total</sub></strong>
-                <ul class="var-list">
-                    <li><b>P(win)</b>: Probability of process <i>i</i> running next.</li>
-                    <li><b>Tickets<sub>i</sub></b>: Number of tickets held by process <i>i</i>.</li>
-                    <li><b>Tickets<sub>total</sub></b>: Sum of tickets of all active processes.</li>
-                </ul>
-            `
+            title: 'Proportional Share (Lottery)',
+            desc: `<p>Also known as Lottery Scheduling. Each process holds a number of <b>Tickets</b>. The scheduler holds a random lottery at each step; the chance of running corresponds to the percentage of total tickets held.</p>`,
+            formula: `<strong>P(win) = Tickets<sub>i</sub> / &Sigma; Tickets<sub>all</sub></strong>`
         },
         'rms': {
             title: 'Rate Monotonic Scheduling (RMS)',
-            desc: `
-                <p>Rate Monotonic Scheduling (RMS) is a static priority scheduling algorithm used for periodic tasks in real-time systems. Priorities are assigned based on the cycle duration (period) of the job: tasks with shorter periods (higher frequency) get higher priorities.</p>
-                <p>RMS is optimal among fixed-priority algorithms. However, schedulability is only guaranteed if the total CPU utilization is below a specific theoretical bound (approx 69% for large N). If utilization exceeds this, deadlines may be missed.</p>
-            `,
-            formula: `
-                <strong>Priority &propto; 1 / T<sub>period</sub></strong><br>
-                <strong>U &le; n(2<sup>1/n</sup> - 1)</strong>
-                <ul class="var-list">
-                    <li><b>T<sub>period</sub></b>: The cycle time of the task (Period).</li>
-                    <li><b>U</b>: Total CPU Utilization.</li>
-                    <li><b>n</b>: Number of processes.</li>
-                </ul>
-            `
+            desc: `<p>A static real-time algorithm for periodic tasks. Priorities are assigned based on cycle duration (Period). Shorter period = Higher priority.</p>`,
+            formula: `<strong>Priority &propto; 1 / Period</strong>`
         },
         'rr': {
             title: 'Round Robin (RR)',
-            desc: `
-                <p>Round Robin (RR) is one of the most widely used algorithms for multitasking systems. It allows every process to use the CPU for a brief, fixed interval of time called a <i>Time Quantum</i> (or Time Slice).</p>
-                <p>Once a process executes for its time quantum, it is preempted and moved to the back of the ready queue, allowing the next process to run. This ensures that no single process monopolizes the CPU and provides good response time for interactive systems. However, performance depends heavily on the length of the time quantum.</p>
-            `,
-            formula: `
-                <strong>Runtime = min(Burst<sub>rem</sub>, TQ)</strong>
-                <ul class="var-list">
-                    <li><b>Burst<sub>rem</sub></b>: Remaining burst time of the process.</li>
-                    <li><b>TQ</b>: Time Quantum (fixed time slice).</li>
-                </ul>
-            `
+            desc: `<p>Each process gets a small unit of CPU time (Time Quantum). When time runs out, the process goes to the back of the queue.</p>`,
+            formula: `<strong>Run min(Burst, TQ), then switch</strong>`
         },
         'sjf': {
             title: 'Shortest Job First (SRTF)',
-            desc: `
-                <p>Shortest Job First (SJF) is an algorithm that selects the process with the smallest execution time. This simulation implements the <b>Preemptive</b> version, commonly known as <i>Shortest Remaining Time First (SRTF)</i>.</p>
-                <p>If a new process arrives with a CPU burst length less than the remaining time of the currently executing process, the scheduler preempts the current one. This algorithm is provably optimal for minimizing the average waiting time, but it requires precise knowledge of how long a process will run, which is difficult to predict in real-world general-purpose systems.</p>
-            `,
-            formula: `
-                <strong>Select P<sub>i</sub> where BT<sub>rem</sub> is minimized.</strong>
-                <ul class="var-list">
-                    <li><b>BT<sub>rem</sub></b>: Remaining Burst Time (Total Burst - Executed Time).</li>
-                </ul>
-            `
+            desc: `<p>SRTF selects the process with the smallest <b>Remaining Time</b>. If a new job arrives with less time than the current one has left, it preempts.</p>`,
+            formula: `<strong>Select min(Burst - Executed)</strong>`
         }
     };
 
@@ -162,12 +75,57 @@ document.addEventListener('DOMContentLoaded', () => {
         statusBadge.className = `status-badge ${state}`;
     }
 
+    /**
+     * Updates the header and input constraints for the Priority/Tickets column.
+     * Also handles setting default values when switching algorithms.
+     */
+    function updatePriorityColumn(algoName) {
+        const inputs = document.querySelectorAll('.input-priority');
+
+        if (algoName === 'propshare') {
+            // FIX: PropShare uses Tickets.
+            priorityHeader.textContent = "TICKETS";
+            inputs.forEach(input => {
+                input.removeAttribute('max'); // Remove 0-9 limit
+                input.placeholder = "e.g. 100";
+                
+                // --- NEW LOGIC: Default to 1 if value is 0 ---
+                // 0 tickets means 0% chance to run, which is usually not desired as a default.
+                if (parseInt(input.value) === 0) {
+                    input.value = 1;
+                }
+            });
+        } else {
+            // Standard Algorithms use Priority 0-9
+            priorityHeader.textContent = "PRIORITY";
+            inputs.forEach(input => {
+                input.setAttribute('max', '9');
+                input.placeholder = "0-9";
+                // Clamp values back to valid range if switching back from PropShare
+                if (parseInt(input.value) > 9) input.value = 9;
+            });
+        }
+    }
+
     function addProcessRow() {
         const clone = rowTemplate.content.cloneNode(true);
         const row = clone.querySelector('.process-row');
         row.querySelector('.input-pid').value = pidCounter++;
+        
         const extraInput = row.querySelector('.input-extra');
         toggleExtraField(extraInput);
+        
+        // --- NEW LOGIC: Set default value based on algorithm ---
+        const prioInput = row.querySelector('.input-priority');
+        if (currentAlgo === 'propshare') {
+            prioInput.removeAttribute('max');
+            prioInput.placeholder = "e.g. 100";
+            prioInput.value = 1; // Default Tickets = 1
+        } else {
+            prioInput.setAttribute('max', '9');
+            prioInput.value = 0; // Default Priority = 0
+        }
+
         row.querySelector('.btn-delete').addEventListener('click', () => {
             row.remove();
             renumberPIDs();
@@ -189,31 +147,31 @@ document.addEventListener('DOMContentLoaded', () => {
         else element.classList.add('hidden');
     }
 
-    // --- Switch Algorithm Function ---
     function switchAlgorithm(algoName) {
         currentAlgo = algoName;
         const content = ALGO_CONTENT[algoName];
 
-        // 1. Update Title and Active Menu State
+        // 1. Update Title and Active Menu
         algoTitle.textContent = content.title;
         menuItems.forEach(item => item.classList.remove('active'));
         document.querySelector(`[data-algo="${algoName}"]`).classList.add('active');
 
-        // 2. Inject Description
+        // 2. Inject Content
         algoDescText.innerHTML = content.desc;
-        
-        // 3. Inject Formula (Matches new CSS structure)
         algoFormula.innerHTML = `
             <div class="formula-header">Mathematical Model</div>
             <div class="formula-body">${content.formula}</div>
         `;
 
-        // 4. Handle Extra Fields (Deadline/Period)
+        // 3. Handle Extra Fields
         toggleExtraField(extraParamHeader);
         const extraInputs = processList.querySelectorAll('.input-extra');
         extraInputs.forEach(toggleExtraField);
 
-        // 5. Reset Results View
+        // 4. Update Priority/Ticket Column (Handles the default 1 logic)
+        updatePriorityColumn(algoName);
+
+        // 5. Reset Results
         resetResults();
     }
 
@@ -221,12 +179,12 @@ document.addEventListener('DOMContentLoaded', () => {
         tableOutput.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">📊</div>
-                <p>Run simulation to see details.</p>
+                <p>No simulation data available</p>
             </div>`;
         metricsOutput.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">⚡</div>
-                <p>Run simulation for metrics.</p>
+                <p>Run simulation to view metrics</p>
             </div>`;
         updateStatus('ready', 'System Ready');
     }
@@ -250,7 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderResults(data) {
-        // Table
         let tableHtml = `<table class="output-table"><thead><tr><th>PID</th><th>AT</th><th>BT</th><th>WT</th><th>TAT</th><th>RT</th></tr></thead><tbody>`;
         data.processes.forEach(p => {
             tableHtml += `<tr><td>P${p.pid}</td><td>${p.at}</td><td>${p.bt}</td><td>${p.wt}</td><td>${p.tat}</td><td>${p.rt}</td></tr>`;
@@ -258,7 +215,6 @@ document.addEventListener('DOMContentLoaded', () => {
         tableHtml += '</tbody></table>';
         tableOutput.innerHTML = tableHtml;
 
-        // Metrics
         const avgs = data.averages;
         if (!avgs || Object.keys(avgs).length === 0) {
             metricsOutput.innerHTML = '<div class="empty-state"><p>No metrics available.</p></div>';
@@ -276,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStatus('ready', 'Simulation Completed');
     }
 
-    // --- Event Listeners ---
+    // --- Listeners ---
     menuItems.forEach(item => {
         item.addEventListener('click', (e) => switchAlgorithm(e.target.closest('.menu-item').dataset.algo));
     });
@@ -289,9 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Please add at least one process.");
             return;
         }
-
         updateStatus('running', 'Simulating...');
-
         try {
             const response = await fetch('/api/simulate', {
                 method: 'POST',
@@ -308,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Initialization ---
+    // Init
     switchAlgorithm(currentAlgo);
     addProcessRow();
     addProcessRow();

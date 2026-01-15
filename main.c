@@ -15,6 +15,28 @@
 #include "RMS/rms.h"
 #include "CFS/cfs.h"
 
+void export_results_to_json(Process *p, int n, const char *algo_name) {
+    // This path goes "up" one level from the build folder to the root
+    FILE *fp = fopen("../simulation_output.json", "w"); 
+    if (fp == NULL) {
+        // Fallback to local directory if root isn't accessible
+        fp = fopen("simulation_output.json", "w");
+    }
+
+    if (fp != NULL) {
+        fprintf(fp, "{\n  \"algorithm\": \"%s\",\n  \"processes\": [\n", algo_name);
+        for (int i = 0; i < n; i++) {
+            fprintf(fp, "    {\n");
+            fprintf(fp, "      \"pid\": %d, \"at\": %d, \"bt\": %d, \"wt\": %d, \"tat\": %d, \"rt\": %d\n",
+                    p[i].pid, p[i].at, p[i].bt, p[i].wt, p[i].tat, p[i].rt);
+            fprintf(fp, "    }%s\n", (i == n - 1) ? "" : ",");
+        }
+        fprintf(fp, "  ]\n}");
+        fclose(fp);
+        printf("\nData exported to simulation_output.json\n");
+    }
+}
+
 int main(int argc, char *argv[]) {
     // If running via command line arg
     int choice = 0;
@@ -69,6 +91,7 @@ int main(int argc, char *argv[]) {
     }
 
     switch(choice) {
+        
         case 1: run_fcfs(p, n); break;
         case 2: run_priority(p, n); break;
         case 3: run_sjf(p, n); break;
@@ -79,8 +102,12 @@ int main(int argc, char *argv[]) {
         case 8: run_rms(p, n); break;
         case 9: run_cfs(p, n); break;
         default: printf("Invalid Selection.\n");
+        
     }
-
+    char* algo_names[] = {"None", "FCFS", "Priority", "SJF", "RR", "MLFQ", "EDF", "Prop Share", "RMS", "CFS"};
+    printf("\nDEBUG: Attempting to save file to simulation_output.json...\n");
+    export_results_to_json(p, n, algo_names[choice]);
+    printf("DEBUG: File save operation finished.\n");
     free(p);
     return 0;
 }

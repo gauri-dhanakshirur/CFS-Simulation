@@ -33,6 +33,12 @@ typedef struct {
     int queue_level; 
 } Process;
 
+typedef struct {
+    int timestamp;
+    int pid;
+    char action[20]; // e.g., "RUNNING", "COMPLETED"
+} ExecutionLog;
+
 void print_table(Process p[], int n, const char* algo_name);
 
 void reset_processes(Process p[], int n);

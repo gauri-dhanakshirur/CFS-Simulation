@@ -77,49 +77,60 @@ def parse_c_output(output_text):
 
 @app.route('/api/simulate', methods=['POST'])
 def simulate():
-    """API endpoint to run the C simulation."""
     if not os.path.exists(EXECUTABLE_PATH):
-        return jsonify({'error': f"Executable not found at {EXECUTABLE_PATH}. Please build the C project first."}), 500
+        return jsonify({'error': f"Executable not found at {EXECUTABLE_PATH}"}), 500
 
     data = request.json
-    algo_id = ALGO_MAP.get(data.get('algorithm'), 1)
+    # Default to 1 (FCFS) if missing
+    algo_id = ALGO_MAP.get(data.get('algorithm'), 1) 
     processes = data.get('processes', [])
 
-    # 1. Construct input string for C program's stdin
-    # Format: Total_N \n P1_AT P1_BT P1_Prio [P1_Extra] \n ...
+    # --- 1. Construct Input String ---
     input_str = f"{len(processes)}\n"
     for p in processes:
-        # Basic fields: AT, BT, Priority
+        # Always send the first 3 parameters
         line = f"{p['arrival']} {p['burst']} {p['priority']}"
-        # Add optional real-time field if present
-        if 'extraParam' in p and p['extraParam']:
-            line += f" {p['extraParam']}"
+        
+        # Only send the 4th parameter if the C code specifically asks for it.
+        # Based on the main.c: 6=EDF, 8=RMS. 
+        # CFS (9) does NOT read a 4th parameter from input.
+        if algo_id == 6 or algo_id == 8:
+            # Use .get() with default 0 to be safe
+            extra = p.get('extraParam', 0)
+            line += f" {extra}"
+        
         input_str += line + "\n"
 
     try:
-        # 2. Run the C executable
-        # Passing algorithm ID as command-line argument, and process data via stdin
+        # --- 2. Run C Executable ---
         process = subprocess.Popen(
-            [EXECUTABLE_PATH, str(algo_id)],
+            [EXECUTABLE_PATH, str(algo_id)], # Pass algo_id as argument
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True # Use text mode for easier handling
+            text=True
         )
         
-        # Communicate sends input and gets output
-        stdout_data, stderr_data = process.communicate(input=input_str, timeout=5)
+        # Write input to stdin and get output
+        stdout_data, stderr_data = process.communicate(input=input_str, timeout=10)
 
+        # Check for C program crashes (segfaults, etc.)
         if process.returncode != 0:
-            return jsonify({'error': f"Simulation failed: {stderr_data}"}), 400
+            return jsonify({'error': f"Simulation Crashed (Code {process.returncode}): {stderr_data}"}), 400
 
-        # 3. Parse the text output into JSON
+        # --- 3. Parse Output ---
         parsed_results = parse_c_output(stdout_data)
+        
+        # If parsing failed (empty results), return the raw stdout for debugging
+        if not parsed_results['processes']:
+            print("DEBUG: Raw C Output:", stdout_data)
+            return jsonify({'error': "Simulation ran but produced no valid output table."}), 500
+
         return jsonify(parsed_results)
 
     except subprocess.TimeoutExpired:
         process.kill()
-        return jsonify({'error': "Simulation timed out."}), 504
+        return jsonify({'error': "Simulation Timed Out. Input mismatch likely."}), 504
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

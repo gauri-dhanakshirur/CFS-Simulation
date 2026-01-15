@@ -1,0 +1,11 @@
+{
+  "algorithm": "RR",
+  "processes": [
+    {
+      "pid": 1, "at": 2, "bt": 3, "wt": 2, "tat": 5, "rt": 0
+    },
+    {
+      "pid": 2, "at": 3, "bt": 2, "wt": 1, "tat": 3, "rt": 1
+    }
+  ]
+}

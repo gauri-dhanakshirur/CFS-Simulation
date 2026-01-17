@@ -1,4 +1,5 @@
 #include <time.h>
+#include <stdlib.h> // For rand()
 #include "propshare.h"
 
 void run_propshare(Process p[], int n) {
@@ -14,10 +15,11 @@ void run_propshare(Process p[], int n) {
         int active_indices[100];
         int active_count = 0;
 
-        // Sum tickets (using Priority as tickets) for ready processes
+        // Sum tickets for ready processes
         for(int i=0; i<n; i++) {
             if(p[i].at <= current_time && !p[i].completed) {
-                total_tickets += p[i].priority; // Higher priority = more tickets
+                // Use tickets field instead of priority
+                total_tickets += p[i].tickets; 
                 active_indices[active_count++] = i;
             }
         }
@@ -30,7 +32,8 @@ void run_propshare(Process p[], int n) {
             // Find winner
             for(int k=0; k<active_count; k++) {
                 int i = active_indices[k];
-                current_sum += p[i].priority;
+                // Use tickets field
+                current_sum += p[i].tickets; 
                 if(ticket < current_sum) {
                     idx = i;
                     break;
@@ -44,7 +47,6 @@ void run_propshare(Process p[], int n) {
                     p[idx].started = true;
                 }
                 
-                // Run for 1 tick (Pre-emptive)
                 p[idx].rem_bt--;
                 current_time++;
 

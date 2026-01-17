@@ -1,3 +1,3 @@
 #include "common.h"
 
-void run_rr(Process p[], int n);
+void run_rr(Process p[], int n, int tq);

@@ -1,7 +1,6 @@
 #include "rr.h"
 
-void run_rr(Process p[], int n) {
-    int tq = 2; // Time Quantum default
+void run_rr(Process p[], int n, int tq) {
     printf("Starting Simulation (RR, Time Quantum = %d)...\n", tq);
     reset_processes(p, n);
 

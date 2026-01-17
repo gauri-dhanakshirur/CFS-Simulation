@@ -55,6 +55,13 @@ int main(int argc, char *argv[]) {
 
     Process *p = (Process*)malloc(n * sizeof(Process));
 
+    // If Algorithm is RR (4), ask for Time Quantum
+    int time_quantum = 2; // Default
+    if (choice == 4) {
+        if (argc < 2) printf("Enter Time Quantum: ");
+        scanf("%d", &time_quantum);
+    }
+
     for(int i=0; i<n; i++) {
         p[i].pid = i + 1;
         printf("\nEnter Details for Process %d:\n", p[i].pid);
@@ -66,18 +73,39 @@ int main(int argc, char *argv[]) {
         printf("Burst Time: ");
         scanf("%d", &p[i].bt);
         
-        printf("Priority (0-9): ");
-        scanf("%d", &p[i].priority);
+        // Only ask for Priority if the algorithm uses it.
+        // ID 2: Priority
+        // ID 7: PropShare (uses priority as tickets)
+        // ID 9: CFS (uses priority for weight)
+        if (choice == 2 || choice == 9) {
+            printf("Priority (0-9): ");
+            scanf("%d", &p[i].priority);
+        } else {
+            // For algorithms that don't use priority (FCFS, SJF, RR, MLFQ, EDF, RMS)
+            // default it to 0 so the struct is clean.
+            p[i].priority = 0; 
+        }
 
         // Init optional fields
         p[i].deadline = 0;
         p[i].period = 0;
+        p[i].tickets = 0; 
         
         if(choice == 6) { // EDF
             printf("Relative Deadline: ");
             scanf("%d", &p[i].deadline);
         }
-        if(choice == 8) { // RMS
+        else if (choice == 7) { // PropShare
+            do {
+                printf("Tickets: ");
+                scanf("%d", &p[i].tickets);
+
+                if (p[i].tickets <= 0) {
+                    printf("Tickets must be greater than 0. Try again.\n");
+                }
+            } while (p[i].tickets <= 0);
+        }
+        else if(choice == 8) { // RMS
             printf("Period: ");
             scanf("%d", &p[i].period);
         }
@@ -91,22 +119,23 @@ int main(int argc, char *argv[]) {
     }
 
     switch(choice) {
-        
         case 1: run_fcfs(p, n); break;
         case 2: run_priority(p, n); break;
         case 3: run_sjf(p, n); break;
-        case 4: run_rr(p, n); break;
+        case 4: run_rr(p, n, time_quantum); break;
         case 5: run_mlfq(p, n); break;
         case 6: run_edf(p, n); break;
         case 7: run_propshare(p, n); break;
         case 8: run_rms(p, n); break;
         case 9: run_cfs(p, n); break;
         default: printf("Invalid Selection.\n");
-        
     }
+
     char* algo_names[] = {"None", "FCFS", "Priority", "SJF", "RR", "MLFQ", "EDF", "Prop Share", "RMS", "CFS"};
     printf("\nDEBUG: Attempting to save file to simulation_output.json...\n");
-    export_results_to_json(p, n, algo_names[choice]);
+    if(choice >= 1 && choice <= 9) {
+        export_results_to_json(p, n, algo_names[choice]);
+    }
     printf("DEBUG: File save operation finished.\n");
     free(p);
     return 0;

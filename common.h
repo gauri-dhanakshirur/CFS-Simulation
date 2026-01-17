@@ -10,6 +10,8 @@ typedef struct {
     int bt;       // Burst Time
     int priority; // 0-9
     
+    int tickets;  // For PropShare
+
     // Real-time specific
     int period;   // For RMS
     int deadline; // For EDF (Relative)

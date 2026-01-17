@@ -2,21 +2,34 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentAlgo = 'cfs';
     let pidCounter = 1;
 
+    // --- Metrics Storage for Comparison ---
+    const ALGO_ORDER = ['cfs', 'edf', 'fcfs', 'mlfq', 'priority', 'propshare', 'rms', 'rr', 'sjf'];
+    const simulationResults = {}; // { algoName: { avg_wt, avg_tat, ... } }
+    let charts = {}; // Chart.js instances
+
     // --- DOM Elements ---
     const processList = document.getElementById('process-list');
     const rowTemplate = document.getElementById('process-row-template');
     const algoTitle = document.getElementById('algo-title');
     const menuItems = document.querySelectorAll('.menu-item');
     const extraParamHeader = document.querySelector('.extra-param-header');
-    
+
     // Select the 4th header span (PID, Arrival, Burst, Priority)
     const priorityHeader = document.querySelector('.table-header span:nth-child(4)');
+    const globalSettings = document.getElementById('global-settings');
 
     const tableOutput = document.getElementById('table-output');
     const metricsOutput = document.getElementById('metrics-output');
     const statusBadge = document.getElementById('status-badge');
     const algoDescText = document.getElementById('algo-desc-text');
     const algoFormula = document.getElementById('algo-formula');
+
+    // Comparison View Elements
+    const dashboardGrid = document.getElementById('dashboard-grid');
+    const comparisonView = document.getElementById('comparison-view');
+    const btnCompare = document.getElementById('btn-compare');
+    const btnBackDashboard = document.getElementById('btn-back-dashboard');
+    const compareControls = document.getElementById('compare-controls');
 
     // --- Algorithm Content ---
     const ALGO_CONTENT = {
@@ -81,50 +94,32 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function updatePriorityColumn(algoName) {
         const inputs = document.querySelectorAll('.input-priority');
-
-        if (algoName === 'propshare') {
-            // FIX: PropShare uses Tickets.
-            priorityHeader.textContent = "TICKETS";
-            inputs.forEach(input => {
-                input.removeAttribute('max'); // Remove 0-9 limit
-                input.placeholder = "e.g. 100";
-                
-                // --- NEW LOGIC: Default to 1 if value is 0 ---
-                // 0 tickets means 0% chance to run, which is usually not desired as a default.
-                if (parseInt(input.value) === 0) {
-                    input.value = 1;
-                }
-            });
-        } else {
-            // Standard Algorithms use Priority 0-9
-            priorityHeader.textContent = "PRIORITY";
-            inputs.forEach(input => {
-                input.setAttribute('max', '9');
-                input.placeholder = "0-9";
-                // Clamp values back to valid range if switching back from PropShare
-                if (parseInt(input.value) > 9) input.value = 9;
-            });
-        }
+        priorityHeader.textContent = "PRIORITY";
+        inputs.forEach(input => {
+            input.setAttribute('max', '9');
+            input.placeholder = "0-9";
+            if (parseInt(input.value) > 9) input.value = 9;
+        });
     }
 
     function addProcessRow() {
         const clone = rowTemplate.content.cloneNode(true);
         const row = clone.querySelector('.process-row');
         row.querySelector('.input-pid').value = pidCounter++;
-        
-        const extraInput = row.querySelector('.input-extra');
-        toggleExtraField(extraInput);
-        
+
+        const extraWrapper = row.querySelector('.input-extra-wrapper');
+        toggleExtraField(extraWrapper);
+
         // --- NEW LOGIC: Set default value based on algorithm ---
         const prioInput = row.querySelector('.input-priority');
-        if (currentAlgo === 'propshare') {
-            prioInput.removeAttribute('max');
-            prioInput.placeholder = "e.g. 100";
-            prioInput.value = 1; // Default Tickets = 1
-        } else {
-            prioInput.setAttribute('max', '9');
-            prioInput.value = 0; // Default Priority = 0
-        }
+        const needsPriority = ['priority', 'cfs'].includes(currentAlgo);
+        const prioWrapper = prioInput.closest('.input-wrapper');
+
+        if (needsPriority) prioWrapper.classList.remove('hidden');
+        else prioWrapper.classList.add('hidden');
+
+        prioInput.setAttribute('max', '9');
+        prioInput.value = 0; // Default Priority = 0
 
         row.querySelector('.btn-delete').addEventListener('click', () => {
             row.remove();
@@ -142,9 +137,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleExtraField(element) {
-        const needsExtra = ['edf', 'rms'].includes(currentAlgo);
+        const needsExtra = ['edf', 'rms', 'propshare'].includes(currentAlgo);
         if (needsExtra) element.classList.remove('hidden');
         else element.classList.add('hidden');
+    }
+
+    function togglePriorityField(show) {
+        if (show) priorityHeader.classList.remove('hidden');
+        else priorityHeader.classList.add('hidden');
+
+        const inputs = processList.querySelectorAll('.input-priority');
+        inputs.forEach(input => {
+            const wrapper = input.closest('.input-wrapper');
+            if (show) wrapper.classList.remove('hidden');
+            else wrapper.classList.add('hidden');
+        });
     }
 
     function switchAlgorithm(algoName) {
@@ -165,10 +172,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 3. Handle Extra Fields
         toggleExtraField(extraParamHeader);
-        const extraInputs = processList.querySelectorAll('.input-extra');
-        extraInputs.forEach(toggleExtraField);
 
-        // 4. Update Priority/Ticket Column (Handles the default 1 logic)
+        // Update Header Text based on Algo
+        // Update Header Text based on Algo
+        if (algoName === 'edf') {
+            extraParamHeader.textContent = "Deadline";
+        } else if (algoName === 'rms') {
+            extraParamHeader.textContent = "Period";
+        } else if (algoName === 'propshare') {
+            extraParamHeader.textContent = "Tickets";
+        } else {
+            extraParamHeader.textContent = "Extra";
+        }
+
+        const extraWrappers = processList.querySelectorAll('.input-extra-wrapper');
+        extraWrappers.forEach(toggleExtraField);
+
+        // 4. Handle Priority Field Visibility
+        const needsPriority = ['priority', 'cfs'].includes(algoName);
+        togglePriorityField(needsPriority);
+
+        // 5. Handle Global Settings (TQ for RR)
+        if (algoName === 'rr') {
+            globalSettings.classList.remove('hidden');
+        } else {
+            globalSettings.classList.add('hidden');
+        }
+
+        // 5. Update Priority/Ticket Column (Handles the default 1 logic)
         updatePriorityColumn(algoName);
 
         // 5. Reset Results
@@ -199,11 +230,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 burst: parseInt(row.querySelector('.input-burst').value) || 1,
                 priority: parseInt(row.querySelector('.input-priority').value) || 0
             };
-            if (['edf', 'rms'].includes(currentAlgo)) {
+            if (['edf', 'rms', 'propshare'].includes(currentAlgo)) {
                 p.extraParam = parseInt(row.querySelector('.input-extra').value) || 0;
             }
             processes.push(p);
         });
+
+        // Special handling for RR: Pass TQ in first process's extraParam
+        if (currentAlgo === 'rr' && processes.length > 0) {
+            const tq = parseInt(document.getElementById('time-quantum').value) || 2;
+            processes[0].extraParam = tq;
+        }
+
         return { algorithm: currentAlgo, processes: processes };
     }
 
@@ -228,13 +266,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 <li><span class="metric-label">CPU Utilization</span> <span class="metric-value">${avgs.cpu_util}</span></li>
                 <li><span class="metric-label">Throughput</span> <span class="metric-value">${avgs.throughput}</span></li>
             </ul>`;
-        
+
+        // SAVE RESULTS FOR COMPARISON (always latest run)
+        simulationResults[currentAlgo] = avgs;
+
         updateStatus('ready', 'Simulation Completed');
+    }
+
+    // --- Chart Logic --- //
+
+    function createChart(ctxId, label, labels, data) {
+        const ctx = document.getElementById(ctxId).getContext('2d');
+        if (charts[ctxId]) charts[ctxId].destroy();
+        charts[ctxId] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ label: label, data: data, backgroundColor: 'rgba(59, 130, 246, 0.6)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    function renderCharts() {
+        const activeAlgos = ALGO_ORDER.filter(algo => simulationResults[algo] !== undefined);
+        const labels = activeAlgos.map(algo => algo.toUpperCase());
+
+        const wtData = activeAlgos.map(algo => parseFloat(simulationResults[algo].avg_wt));
+        const tatData = activeAlgos.map(algo => parseFloat(simulationResults[algo].avg_tat));
+        const rtData = activeAlgos.map(algo => parseFloat(simulationResults[algo].avg_rt));
+        const cpuData = activeAlgos.map(algo => parseFloat(simulationResults[algo].cpu_util.replace('%', '')));
+        const thruData = activeAlgos.map(algo => parseFloat(simulationResults[algo].throughput.split(' ')[0]));
+
+        createChart('chart-wt', 'Average Waiting Time (sec)', labels, wtData);
+        createChart('chart-tat', 'Average Turnaround Time (sec)', labels, tatData);
+        createChart('chart-rt', 'Average Response Time (sec)', labels, rtData);
+        createChart('chart-cpu', 'CPU Utilization (%)', labels, cpuData);
+        createChart('chart-thru', 'Throughput (processes/sec)', labels, thruData);
+    }
+
+    function toggleComparisonView(show) {
+        if (show) {
+            dashboardGrid.classList.add('hidden');
+            comparisonView.classList.remove('hidden');
+            compareControls.classList.remove('hidden');
+            algoTitle.textContent = "Algorithm Comparison";
+        } else {
+            dashboardGrid.classList.remove('hidden');
+            comparisonView.classList.add('hidden');
+            compareControls.classList.add('hidden');
+            algoTitle.textContent = ALGO_CONTENT[currentAlgo].title;
+        }
     }
 
     // --- Listeners ---
     menuItems.forEach(item => {
-        item.addEventListener('click', (e) => switchAlgorithm(e.target.closest('.menu-item').dataset.algo));
+        if (!item.classList.contains('special-item')) {
+            item.addEventListener('click', (e) => switchAlgorithm(e.target.closest('.menu-item').dataset.algo));
+        }
     });
 
     document.getElementById('btn-add-process').addEventListener('click', addProcessRow);
@@ -260,6 +349,21 @@ document.addEventListener('DOMContentLoaded', () => {
             updateStatus('error', 'Error');
             tableOutput.innerHTML = `<div class="empty-state" style="color:#ef4444"><p>Simulation Failed</p></div>`;
         }
+    });
+
+    // Comparison Listeners
+    btnCompare.addEventListener('click', () => {
+        const resultsCount = Object.keys(simulationResults).length;
+        if (resultsCount >= 2) {
+            toggleComparisonView(true);
+            renderCharts();
+        } else {
+            alert(`Need at least 2 simulated algorithms to compare. Currently have ${resultsCount}.`);
+        }
+    });
+
+    btnBackDashboard.addEventListener('click', () => {
+        toggleComparisonView(false);
     });
 
     // Init

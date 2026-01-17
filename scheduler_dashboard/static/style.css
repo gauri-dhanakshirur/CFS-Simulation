@@ -420,3 +420,38 @@ input[type="number"]:focus {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+/* --- Settings Bar --- */
+.settings-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #f1f5f9;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+}
+
+.settings-bar label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.settings-bar input {
+    width: 60px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+    text-align: center;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+}
+
+/* --- Comparison View --- */
+.comparison-grid { flex: 1; display: grid; grid-template-columns: 1fr; gap: 2rem; padding: 2rem; overflow-y: auto; }
+.chart-card { background: white; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); min-height: 300px; }
+.chart-card h3 { text-align: center; margin-bottom: 1rem; color: var(--text-secondary); font-size: 1rem; }
+.sidebar-divider { height: 1px; background-color: var(--border); margin: 1rem 0; }
+.special-item { color: var(--primary); background-color: #e0e7ff; border: 1px solid var(--primary); text-align: center; font-weight: 700; }
+.special-item:hover { background-color: var(--primary); color: white; }
+#compare-controls { margin-right: auto; margin-left: 2rem; }

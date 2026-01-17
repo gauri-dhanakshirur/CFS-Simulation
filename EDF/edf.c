@@ -21,6 +21,12 @@ void run_edf(Process p[], int n) {
                     idx = i;
                 }
             }
+            // Tie-breaker using priority if deadlines are equal
+            else if(p[i].abs_deadline == earliest_dl) {
+                if (idx != -1 && p[i].priority < p[idx].priority) { // Lower no. = higher priority
+                    idx = i;
+                }
+            }
         }
 
         if(idx != -1) {

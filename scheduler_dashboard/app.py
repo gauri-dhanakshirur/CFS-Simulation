@@ -86,17 +86,32 @@ def simulate():
     processes = data.get('processes', [])
 
     # --- 1. Construct Input String ---
+    # The order MUST match the scanf calls in the C main function exactly.
     input_str = f"{len(processes)}\n"
+
+    # If RR (4), send Time Quantum immediately after N
+    if algo_id == 4:
+        # Take TQ from the first process's "extraParam", default to 2
+        tq = processes[0].get('extraParam', 2)
+        input_str += f"{tq}\n"
+    
     for p in processes:
-        # Always send the first 3 parameters
-        line = f"{p['arrival']} {p['burst']} {p['priority']}"
+        # 1. Arrival and Burst are always required
+        line = f"{p['arrival']} {p['burst']}"
         
-        # Only send the 4th parameter if the C code specifically asks for it.
-        # Based on the main.c: 6=EDF, 8=RMS. 
-        # CFS (9) does NOT read a 4th parameter from input.
-        if algo_id == 6 or algo_id == 8:
+        # 2. Priority is OPTIONAL in C.
+        # Only append it if algo is Priority(2), or CFS(9).
+        if algo_id in [2, 9]:
+            line += f" {p['priority']}"
+        
+        # 3. Extra Parameters (Deadline, Period or Tickets)
+        # Only append if algo is EDF(6) or RMS(8) or PropShare(7).
+        if algo_id == 6 or algo_id == 8 or algo_id == 7:
             # Use .get() with default 0 to be safe
             extra = p.get('extraParam', 0)
+            # For PropShare, ensure at least 1 ticket to avoid division by zero
+            if algo_id == 7 and int(extra) <= 0:
+                extra = 1
             line += f" {extra}"
         
         input_str += line + "\n"
@@ -112,6 +127,7 @@ def simulate():
         )
         
         # Write input to stdin and get output
+        # Increased timeout slightly to handle potential large inputs
         stdout_data, stderr_data = process.communicate(input=input_str, timeout=10)
 
         # Check for C program crashes (segfaults, etc.)
@@ -132,6 +148,7 @@ def simulate():
         process.kill()
         return jsonify({'error': "Simulation Timed Out. Input mismatch likely."}), 504
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':

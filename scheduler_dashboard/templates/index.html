@@ -10,13 +10,13 @@
         rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
 </head>
 
 <body>
     <div class="app-container">
         <nav class="sidebar">
-            <div class="brand">
+            <div class="brand" id="brand-home" style="cursor: pointer;">
                 <div class="logo-icon">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -35,9 +35,13 @@
                 <span>SCHEDULER<span class="brand-highlight">PRO</span></span>
             </div>
 
+            <ul class="menu-list">
+                <li class="menu-item home-item active" id="menu-home">Home</li>
+            </ul>
+
             <div class="sidebar-label">Algorithms</div>
             <ul class="menu-list">
-                <li class="menu-item active" data-algo="cfs">CFS</li>
+                <li class="menu-item" data-algo="cfs">CFS</li>
                 <li class="menu-item" data-algo="edf">EDF</li>
                 <li class="menu-item" data-algo="fcfs">FCFS</li>
                 <li class="menu-item" data-algo="mlfq">MLFQ</li>
@@ -57,7 +61,8 @@
         <main class="main-content">
             <header class="top-bar">
                 <div class="header-content">
-                    <h2 id="algo-title">CFS Configuration</h2>
+                    <h2 id="algo-title"><a href="/algorithm/cfs" id="algo-link" class="algo-title-link">CFS
+                            Configuration</a></h2>
                 </div>
                 <div id="compare-controls" class="hidden">
                     <button id="btn-back-dashboard" class="btn btn-secondary">← Back to Dashboard</button>
@@ -68,16 +73,6 @@
             </header>
 
             <div class="dashboard-grid" id="dashboard-grid">
-                <section class="card description-card">
-                    <div class="card-header">
-                        <h3>Algorithm Overview</h3>
-                    </div>
-                    <div class="description-content">
-                        <div id="algo-desc-text" class="desc-text"></div>
-                        <div id="algo-formula" class="formula-container"></div>
-                    </div>
-                </section>
-
                 <section class="card input-card">
                     <div class="card-header">
                         <h3>Process Queue</h3>
@@ -110,46 +105,281 @@
                     </div>
                 </section>
 
-                <section class="card results-card">
+                <!-- Gantt Chart Card - Shows scheduling timeline -->
+                <section class="card gantt-card expandable-card" data-card="gantt">
+                    <div class="card-header">
+                        <h3>Execution Timeline (Gantt Chart)</h3>
+                        <button class="btn-expand" title="Expand">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <polyline points="9 21 3 21 3 15"></polyline>
+                                <line x1="21" y1="3" x2="14" y2="10"></line>
+                                <line x1="3" y1="21" x2="10" y2="14"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="gantt-output" class="gantt-container card-content">
+                        <div class="empty-state">
+                            <div class="empty-icon"></div>
+                            <p>Run simulation to view Gantt chart</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VRuntime Graph Card - CFS specific -->
+                <section class="card vruntime-card hidden expandable-card" id="vruntime-card" data-card="vruntime">
+                    <div class="card-header">
+                        <h3>VRuntime Progression (CFS Signature)</h3>
+                        <button class="btn-expand" title="Expand">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <polyline points="9 21 3 21 3 15"></polyline>
+                                <line x1="21" y1="3" x2="14" y2="10"></line>
+                                <line x1="3" y1="21" x2="10" y2="14"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="chart-wrapper card-content">
+                        <canvas id="chart-vruntime"></canvas>
+                    </div>
+                </section>
+
+                <section class="card results-card expandable-card" data-card="results">
                     <div class="card-header">
                         <h3>Execution Results</h3>
+                        <button class="btn-expand" title="Expand">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <polyline points="9 21 3 21 3 15"></polyline>
+                                <line x1="21" y1="3" x2="14" y2="10"></line>
+                                <line x1="3" y1="21" x2="10" y2="14"></line>
+                            </svg>
+                        </button>
                     </div>
-                    <div id="table-output" class="result-content">
+                    <div id="table-output" class="result-content card-content">
                         <div class="empty-state">
-                            <div class="empty-icon">📊</div>
+                            <div class="empty-icon"></div>
                             <p>No simulation data available</p>
                         </div>
                     </div>
                 </section>
 
-                <section class="card metrics-card">
+                <!-- Fairness Score Card - Prominent display -->
+                <section class="card fairness-card expandable-card" data-card="fairness" data-metric="fairness">
+                    <div class="card-header">
+                        <h3>Fairness Score</h3>
+                        <button class="btn-expand" title="Expand">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <polyline points="9 21 3 21 3 15"></polyline>
+                                <line x1="21" y1="3" x2="14" y2="10"></line>
+                                <line x1="3" y1="21" x2="10" y2="14"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="fairness-output" class="fairness-content card-content">
+                        <div class="fairness-score-container">
+                            <div class="fairness-score" id="fairness-score">—</div>
+                            <div class="fairness-label">Jain's Fairness Index</div>
+                            <div class="fairness-scale">
+                                <span class="scale-low">0 (Unfair)</span>
+                                <span class="scale-high">1 (Perfect)</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card metrics-card expandable-card" data-card="metrics">
                     <div class="card-header">
                         <h3>Metrics</h3>
+                        <button class="btn-expand" title="Expand">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <polyline points="9 21 3 21 3 15"></polyline>
+                                <line x1="21" y1="3" x2="14" y2="10"></line>
+                                <line x1="3" y1="21" x2="10" y2="14"></line>
+                            </svg>
+                        </button>
                     </div>
-                    <div id="metrics-output" class="result-content">
+                    <div id="metrics-output" class="result-content card-content">
                         <div class="empty-state">
-                            <div class="empty-icon">⚡</div>
+                            <div class="empty-icon"></div>
                             <p>Run simulation to view metrics</p>
                         </div>
                     </div>
                 </section>
             </div>
 
+            <!-- Home View -->
+            <div id="home-view" class="home-view">
+                <div class="home-content">
+                    <section class="home-hero card">
+                        <div class="hero-icon"></div>
+                        <h1>CPU Scheduling Algorithm Simulator</h1>
+                        <p class="hero-subtitle">
+                            An interactive visualization platform for understanding and comparing CPU scheduling
+                            algorithms used in operating systems.
+                        </p>
+                    </section>
+
+                    <section class="home-section card">
+                        <h2>About This Project</h2>
+                        <p>
+                            This simulator provides a hands-on way to explore how different CPU scheduling algorithms
+                            manage process execution.
+                            The project was built to bridge the gap between theoretical operating systems concepts and
+                            practical understanding.
+                        </p>
+                        <p>
+                            Powered by a high-performance C backend, the simulator executes real scheduling algorithms
+                            and visualizes
+                            their behavior through interactive Gantt charts, performance metrics, and fairness analysis.
+                        </p>
+                    </section>
+
+                    <section class="home-section card">
+                        <h2>Purpose & Use Cases</h2>
+                        <div class="use-case-grid">
+                            <div class="use-case">
+                                <h3>Educational Tool</h3>
+                                <p>Perfect for students studying Operating Systems courses. Visualize how algorithms
+                                    like FCFS, SJF, Round Robin, and CFS actually schedule processes.</p>
+                                <ul>
+                                    <li>See Gantt charts animate process execution</li>
+                                    <li>Understand waiting time and turnaround time calculations</li>
+                                    <li>Compare algorithm trade-offs visually</li>
+                                </ul>
+                            </div>
+                            <div class="use-case">
+                                <h3>Developer Benchmarking</h3>
+                                <p>Useful for OS and system developers who need to compare different scheduling
+                                    strategies and their metrics.</p>
+                                <ul>
+                                    <li>Analyze performance metrics like throughput and CPU utilization</li>
+                                    <li>Evaluate Jain's Fairness Index for scheduler fairness</li>
+                                    <li>Compare multiple algorithms side-by-side</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="home-section card">
+                        <h2>Algorithms Implemented</h2>
+                        <p>The simulator implements 9 different CPU scheduling algorithms, from basic to advanced:</p>
+                        <div class="algo-chips">
+                            <a href="/algorithm/fcfs" class="algo-chip">FCFS <span>First Come First Serve</span></a>
+                            <a href="/algorithm/sjf" class="algo-chip">SJF <span>Shortest Job First</span></a>
+                            <a href="/algorithm/rr" class="algo-chip">RR <span>Round Robin</span></a>
+                            <a href="/algorithm/priority" class="algo-chip">Priority <span>Priority-Based</span></a>
+                            <a href="/algorithm/mlfq" class="algo-chip">MLFQ <span>Multi-Level Feedback Queue</span></a>
+                            <a href="/algorithm/cfs" class="algo-chip">CFS <span>Linux's Completely Fair
+                                    Scheduler</span></a>
+                            <a href="/algorithm/edf" class="algo-chip">EDF <span>Earliest Deadline First</span></a>
+                            <a href="/algorithm/rms" class="algo-chip">RMS <span>Rate Monotonic Scheduling</span></a>
+                            <a href="/algorithm/propshare" class="algo-chip">PropShare <span>Lottery
+                                    Scheduling</span></a>
+                        </div>
+                    </section>
+
+                    <section class="home-section card">
+                        <h2>How It Works</h2>
+                        <div class="steps-list">
+                            <div class="step">
+                                <div class="step-num">1</div>
+                                <div class="step-content">
+                                    <h4>Select an Algorithm</h4>
+                                    <p>Choose a scheduling algorithm from the sidebar. Each algorithm has specific
+                                        parameters and characteristics.</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-num">2</div>
+                                <div class="step-content">
+                                    <h4>Configure Processes</h4>
+                                    <p>Add processes with arrival time, burst time, and algorithm-specific parameters
+                                        (priority, deadline, tickets, etc.).</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-num">3</div>
+                                <div class="step-content">
+                                    <h4>Run Simulation</h4>
+                                    <p>Click "Run Simulation" to execute the scheduler. The C backend processes your
+                                        input and generates execution data.</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-num">4</div>
+                                <div class="step-content">
+                                    <h4>Analyze Results</h4>
+                                    <p>View the Gantt chart, performance metrics (WT, TAT, RT), CPU utilization,
+                                        throughput, and fairness index.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="home-section card">
+                        <h2>Metrics Explained</h2>
+                        <div class="metrics-grid">
+                            <div class="metric-item" data-metric="wt">
+                                <strong>Waiting Time (WT)</strong>
+                                <p>Time a process spends waiting in the ready queue before execution.</p>
+                            </div>
+                            <div class="metric-item" data-metric="tat">
+                                <strong>Turnaround Time (TAT)</strong>
+                                <p>Total time from process arrival to completion (WT + Burst Time).</p>
+                            </div>
+                            <div class="metric-item" data-metric="rt">
+                                <strong>Response Time (RT)</strong>
+                                <p>Time from process arrival to first CPU allocation.</p>
+                            </div>
+                            <div class="metric-item" data-metric="cpu">
+                                <strong>CPU Utilization</strong>
+                                <p>Percentage of time the CPU is actively executing processes.</p>
+                            </div>
+                            <div class="metric-item" data-metric="thru">
+                                <strong>Throughput</strong>
+                                <p>Number of processes completed per unit time.</p>
+                            </div>
+                            <div class="metric-item" data-metric="fairness">
+                                <strong>Jain's Fairness Index</strong>
+                                <p>A value between 0-1 measuring how fairly CPU time is distributed (1 = perfect
+                                    fairness).</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="home-section card cta-section">
+                        <h2>Get Started</h2>
+                        <p>Select an algorithm from the sidebar to begin simulating, or click on any algorithm name
+                            above to learn more about how it works.</p>
+                        <button class="btn btn-primary" id="btn-start-simulator">Start with CFS →</button>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Comparison View -->
             <!-- Comparison View -->
             <div id="comparison-view" class="comparison-grid hidden">
-                <div class="chart-card">
+                <div class="chart-card" data-metric="wt">
                     <h3>Average Waiting Time (sec)</h3><canvas id="chart-wt"></canvas>
                 </div>
-                <div class="chart-card">
+                <div class="chart-card" data-metric="tat">
                     <h3>Average Turnaround Time (sec)</h3><canvas id="chart-tat"></canvas>
                 </div>
-                <div class="chart-card">
+                <div class="chart-card" data-metric="rt">
                     <h3>Average Response Time (sec)</h3><canvas id="chart-rt"></canvas>
                 </div>
-                <div class="chart-card">
+                <div class="chart-card" data-metric="cpu">
                     <h3>CPU Utilization (%)</h3><canvas id="chart-cpu"></canvas>
                 </div>
-                <div class="chart-card">
+                <div class="chart-card" data-metric="thru">
                     <h3>Throughput (processes/sec)</h3><canvas id="chart-thru"></canvas>
                 </div>
             </div>
@@ -188,6 +418,25 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+    <!-- Expandable Modal -->
+    <div id="expand-modal" class="expand-modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="modal-title">Expanded View</h2>
+                <button class="btn-close-modal" title="Close">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div id="modal-content" class="modal-body">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

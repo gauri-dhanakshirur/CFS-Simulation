@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proportional Share / Lottery Scheduling</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-y: auto;
+            background: #f1f5f9;
+        }
+
+        .algo-page {
+            padding: 2rem 3rem 5rem 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .algo-hero {
+            background: linear-gradient(135deg, #16a34a 0%, #4ade80 100%);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            position: relative;
+            border: 3px solid #15803d;
+        }
+
+        .algo-hero h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .algo-hero .subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .btn-source {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-source:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-source svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            border: 2px solid #cbd5e1;
+        }
+
+        .content-section h2 {
+            color: #15803d;
+            margin-bottom: 1.25rem;
+            font-size: 1.5rem;
+            border-bottom: 3px solid #16a34a;
+            padding-bottom: 0.75rem;
+        }
+
+        .content-section h3 {
+            color: #1e293b;
+            margin: 1.5rem 0 1rem 0;
+            font-size: 1.2rem;
+        }
+
+        .content-section p {
+            line-height: 1.9;
+            color: #475569;
+            margin-bottom: 1rem;
+        }
+
+        .content-section ul,
+        .content-section ol {
+            line-height: 1.9;
+            color: #475569;
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .content-section li {
+            margin-bottom: 0.75rem;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid #16a34a;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .formula-box .formula {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #166534;
+            font-family: 'Courier New', monospace;
+        }
+
+        .formula-box .formula-desc {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-top: 0.75rem;
+        }
+
+        .example-box {
+            background: #fffbeb;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .example-box h4 {
+            color: #b45309;
+            margin: 0 0 1rem 0;
+        }
+
+        .example-box p,
+        .example-box li {
+            color: #78350f;
+        }
+
+        .math-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .math-table th,
+        .math-table td {
+            border: 2px solid #cbd5e1;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .math-table th {
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+
+        .math-table tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .math-table .highlight-row {
+            background: #fef3c7 !important;
+            font-weight: 600;
+        }
+
+        .info-box {
+            background: #f0fdf4;
+            border: 2px solid #16a34a;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .info-box strong {
+            color: #15803d;
+        }
+
+        .info-box p {
+            color: #166534;
+            margin: 0;
+        }
+
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .pros,
+        .cons {
+            padding: 1.25rem;
+            border-radius: 12px;
+        }
+
+        .pros {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+        }
+
+        .cons {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+        }
+
+        .pros h4 {
+            color: #16a34a;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .cons h4 {
+            color: #dc2626;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .pros ul,
+        .cons ul {
+            margin: 0;
+            padding-left: 1.25rem;
+        }
+
+        .lottery-visual {
+            display: flex;
+            margin: 1.5rem 0;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 60px;
+        }
+
+        .lottery-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .ticket-visual {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 4px;
+            margin: 1rem 0;
+        }
+
+        .ticket {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: white;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="algo-page">
+        <a href="/" class="back-link">← Back to Simulator</a>
+
+        <div class="algo-hero">
+            <h1>Proportional Share / Lottery Scheduling</h1>
+            <p class="subtitle">Fair Share CPU Allocation with Randomization</p>
+            <a href="https://github.com/gauri-dhanakshirur/CFS-Simulation/tree/main/PropShare" target="_blank"
+                class="btn-source">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                </svg>
+                View Source Code
+            </a>
+        </div>
+
+        <section class="content-section">
+            <h2>Introduction</h2>
+            <p><strong>Proportional Share Scheduling</strong> (also called Lottery Scheduling) allocates CPU time in
+                proportion to the number of "tickets" each process holds. More tickets = higher probability of being
+                selected.</p>
+            <p>Instead of strict priorities, this scheduler uses <strong>randomization</strong> to achieve fairness over
+                time. A process with 75% of tickets will, on average, get 75% of CPU time.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Mathematical Formulas</h2>
+            <h3>CPU Share</h3>
+            <div class="formula-box">
+                <div class="formula">Share<sub>i</sub> = Tickets<sub>i</sub> / Σ Tickets</div>
+                <div class="formula-desc">Each process gets CPU proportional to its ticket fraction</div>
+            </div>
+
+            <h3>Win Probability</h3>
+            <div class="formula-box">
+                <div class="formula">P(process i wins) = Tickets<sub>i</sub> / Total Tickets</div>
+                <div class="formula-desc">Probability of winning each lottery = share of total tickets</div>
+            </div>
+
+            <h3>Expected Execution Time</h3>
+            <div class="formula-box">
+                <div class="formula">Expected Time = Runtime × (Total / My Tickets)</div>
+                <div class="formula-desc">Process with fewer tickets takes longer to complete (on average)</div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Ticket Visualization</h2>
+            <div class="example-box">
+                <h4>Example Setup</h4>
+                <p>P1: 75 tickets (75%), P2: 25 tickets (25%)</p>
+            </div>
+
+            <h3>Lottery Pool (100 tickets)</h3>
+            <div class="lottery-visual">
+                <div class="lottery-segment" style="flex: 75; background: #6366f1;">P1: 75 tickets</div>
+                <div class="lottery-segment" style="flex: 25; background: #ec4899;">P2: 25 tickets</div>
+            </div>
+
+            <h3>Ticket Distribution</h3>
+            <div class="ticket-visual">
+                <div class="ticket" style="background: #6366f1;">1</div>
+                <div class="ticket" style="background: #6366f1;">2</div>
+                <div class="ticket" style="background: #6366f1;">3</div>
+                <div class="ticket" style="background: #6366f1;">...</div>
+                <div class="ticket" style="background: #6366f1;">73</div>
+                <div class="ticket" style="background: #6366f1;">74</div>
+                <div class="ticket" style="background: #6366f1;">75</div>
+                <div class="ticket" style="background: #ec4899;">76</div>
+                <div class="ticket" style="background: #ec4899;">...</div>
+                <div class="ticket" style="background: #ec4899;">100</div>
+            </div>
+
+            <p>Random number 1-100 drawn. If 1-75: P1 wins. If 76-100: P2 wins.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Detailed Example</h2>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Process</th>
+                        <th>Tickets</th>
+                        <th>Share %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>P1</td>
+                        <td>75</td>
+                        <td>75%</td>
+                    </tr>
+                    <tr>
+                        <td>P2</td>
+                        <td>25</td>
+                        <td>25%</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>Total</strong></td>
+                        <td><strong>100</strong></td>
+                        <td><strong>100%</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Lottery Draws (10 time slices)</h3>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Slice</th>
+                        <th>Random #</th>
+                        <th>Winner</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>63</td>
+                        <td>P1 (≤75)</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>85</td>
+                        <td>P2 (>75)</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>17</td>
+                        <td>P1</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>42</td>
+                        <td>P1</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>91</td>
+                        <td>P2</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>28</td>
+                        <td>P1</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>55</td>
+                        <td>P1</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>71</td>
+                        <td>P1</td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td>88</td>
+                        <td>P2</td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td>33</td>
+                        <td>P1</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td colspan="2"><strong>Result</strong></td>
+                        <td><strong>P1: 7, P2: 3</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box">
+                <strong>Analysis:</strong>
+                <p>P1 got 70% (expected 75%), P2 got 30% (expected 25%). With more iterations, results converge to
+                    expected shares.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Advanced Mechanisms</h2>
+            <h3>Ticket Transfer</h3>
+            <p>Processes can temporarily give tickets to other processes. A client can transfer tickets to a server
+                while waiting for a response.</p>
+
+            <h3>Ticket Inflation</h3>
+            <p>In a trusted environment, processes can temporarily increase their tickets to get more CPU time when
+                needed.</p>
+
+            <h3>Ticket Currency</h3>
+            <p>Groups of processes can have their own local ticket currency, converted to global tickets. A user with
+                100 global tickets can distribute them as "500 local tickets" among their jobs.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Advantages & Disadvantages</h2>
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>Advantages</h4>
+                    <ul>
+                        <li>Simple to understand and implement</li>
+                        <li>Flexible resource allocation</li>
+                        <li>No starvation (all have chance)</li>
+                        <li>Probabilistic fairness</li>
+                        <li>Supports ticket transfer/inflation</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>Disadvantages</h4>
+                    <ul>
+                        <li>Non-deterministic (randomness)</li>
+                        <li>Requires many draws for fairness</li>
+                        <li>Not suitable for real-time</li>
+                        <li>Can have unfair short-term variance</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>

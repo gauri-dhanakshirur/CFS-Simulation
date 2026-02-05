@@ -1,125 +1,113 @@
-# CPU Scheduler Simulation
+# Advanced CPU Scheduler Simulator
 
-A comprehensive CPU scheduling simulation tool written in C. This project implements various scheduling algorithms, ranging from standard batch processing to real-time and fair queuing systems.
+A comprehensive, interactive educational tool for visualizing and comparing CPU scheduling algorithms. This project combines a high-performance C backend for simulation logic with a modern Python/Flask web dashboard for rich visualizations.
+
+## Key Features
+
+-   **9 Scheduling Algorithms**: Implementations of classic and advanced algorithms including CFS (Completely Fair Scheduler).
+-   **Interactive Dashboard**: Web-based interface to configure processes and view results in real-time.
+-   **Rich Visualizations**:
+    -   **Gantt Charts**: Visual timeline of process execution.
+    -   **VRuntime Graphs**: Exclusive visualization for CFS virtual runtime convergence.
+    -   **Performance Metrics**: Bar charts for Waiting Time, Turnaround Time, Response Time, and Throughput.
+    -   **Fairness Analysis**: Jain's Fairness Index calculator.
+-   **Comparison Mode**: Run different algorithms on the same dataset and compare performance side-by-side.
+-   **Educational Content**: In-depth explanations of each algorithm built directly into the UI.
+
+## Technology Stack
+
+-   **Simulation Core**: C (for precise, low-level scheduling logic)
+-   **API Layer**: Python Flask
+-   **Frontend**: HTML5, CSS3, JavaScript (Chart.js for graphs)
+-   **Build System**: CMake
 
 ## Supported Algorithms
 
 1.  **FCFS** (First Come First Serve)
-2.  **Priority** (Preemptive Priority Scheduler)
-3.  **SJF** (Shortest Job First)
-4.  **RR** (Round Robin)
-5.  **MLFQ** (Multi-Level Feedback Queue - 2 Queues)
+2.  **SJF** (Shortest Job First - Non-preemptive)
+3.  **RR** (Round Robin)
+4.  **Priority** (Preemptive)
+5.  **MLFQ** (Multi-Level Feedback Queue)
 6.  **EDF** (Earliest Deadline First - Real Time)
-7.  **Proportional Share** (Lottery Scheduling)
-8.  **RMS** (Rate Monotonic Scheduling - Real Time)
-9.  **CFS** (Completely Fair Scheduler - AVL Tree)
+7.  **RMS** (Rate Monotonic Scheduling - Real Time)
+8.  **Proportional Share** (Lottery Scheduling)
+9.  **CFS** (Completely Fair Scheduler)
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+-   **C Compiler**: GCC or Clang
+-   **CMake**: Version 3.10+
+-   **Python**: Version 3.8+
+-   **Python Packages**: `flask`
+
+### Installation
+
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/yourusername/cfs-simulation.git
+    cd cfs-simulation
+    ```
+
+2.  **Build the C Simulation Core**:
+    ```bash
+    mkdir build
+    cd build
+    cmake ..
+    cmake --build . --config Debug
+    cd ..
+    ```
+
+3.  **Install Python Dependencies**:
+    ```bash
+    pip install flask
+    ```
+
+### Running the Web Dashboard (Recommended)
+
+1.  **Start the Flask Server**:
+    ```bash
+    cd scheduler_dashboard
+    python app.py
+    ```
+
+2.  **Access the Dashboard**:
+    Open your browser and navigate to `http://localhost:5000`.
+
+### Running in CLI Mode
+
+You can also run the simulation directly in the terminal without the web interface.
+
+**Windows:**
+```powershell
+.\run.bat
+```
+
+**Linux/macOS:**
+```bash
+./run.sh
+```
+
+---
 
 ## Project Structure
 
 ```text
-scheduler_project/
-├── run.bat              # Windows Automation Script
-├── run.sh               # Linux/macOS Automation Script
-├── CMakeLists.txt       # Build configuration
-├── .gitattributes
-├── .gitignore
-├── main.c               
-├── common.h             # Shared structures (Process) and helper functions
-├── common.c             
-├── CFS/                 # Completely Fair Scheduler
-│   └── cfs.h
-│   └── cfs.c
-├── FCFS/                # First Come First Serve
-│   └── fcfs.h
-│   └── fcfs.c
-├── SJF/                 # Shortest Job First
-│   └── sjf.h
-│   └── sjf.c
-├── Priority/            # Priority Scheduling
-│   └── priority.h
-│   └── priority.c
-├── RR/                  # Round Robin
-│   └── rr.h
-│   └── rr.c
-├── MLFQ/                # Multi-Level Feedback Queue
-│   └── mlfq.h
-│   └── mlfq.c
-├── EDF/                 # Earliest Deadline First
-│   └── edf.h
-│   └── edf.c
-├── PropShare/           # Proportional Share
-│   └── propshare.h
-│   └── propshare.c
-└── RMS/                 # Rate Monotonic Scheduling
-    └── rms.h
-    └── rms.c
+.
+├── scheduler_dashboard/     # Python Flask Web Application
+│   ├── static/              # CSS, JavaScript, and Assets
+│   ├── templates/           # HTML Templates
+│   └── app.py               # Main Flask Application
+├── CFS/                     # Completely Fair Scheduler Source
+├── FCFS/                    # First Come First Serve Source
+├── ...                      # Other Algorithm Sources
+├── common.c                 # Shared Simulation Logic
+├── main.c                   # CLI Entry Point
+├── CMakeLists.txt           # Build Config
+└── README.md                # Project Documentation
 ```
 
-## Quick Start (Recommended)
 
-This project includes automation scripts to handle building and running the code in one step.
-
-### Windows
-```powershell
-# Run interactively (will ask for algorithm ID)
-.\run.bat
-
-# OR run a specific algorithm immediately (e.g., CFS)
-.\run.bat 9
-```
-
-### Linux/macOS
-```bash
-# Run interactively (will ask for algorithm ID)
-./run.sh
-
-# OR run a specific algorithm immediately (e.g., CFS)
-./run.sh 9
-```
-
-## Manual Build Instructions (If you prefer manually using cmake)
-
-### Prerequisites
-* **C Compiler:** GCC, Clang, or MSVC (Visual Studio)
-* **Build Tool:** [CMake](https://cmake.org/download/) (Version 3.10 or higher)
-  
-### Windows (Visual Studio / PowerShell)
-1.  Open a terminal in the project root.
-2.  Create a build directory:
-    ```powershell
-    mkdir build
-    cd build
-    ```
-3.  Generate build files:
-    ```powershell
-    cmake ..
-    ```
-4.  Compile the project:
-    ```powershell
-    cmake --build .
-    ```
-5.  Execute the project:
-    ```powershell
-    .\Debug\scheduler.exe algorithmID
-    ```
-
-### Linux / macOS
-```bash
-mkdir build
-cd build
-cmake ..
-make
-./scheduler algorithmID
-```
-
-### Algorithm IDs
-<img width="219" height="374" alt="image" src="https://github.com/user-attachments/assets/96600166-892e-40f4-9a33-ea88224ce111" />
-
-## NOTE
-Follow the prompts to enter process details.
-* Priority: * Standard: 0-9 (Lower number implies higher priority).
-    * Proportional Share: Treated as "Tickets".
-    * CFS: Mapped to "Weights" (Priority 0 = High Weight, Priority 9 = Low Weight).
-* Real-Time Params:
-    * EDF: Requires Relative Deadline.
-    * RMS: Requires Period.

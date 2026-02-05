@@ -29,12 +29,18 @@ void run_rr(Process p[], int n, int tq) {
 
                 int exec_time = (p[i].rem_bt > tq) ? tq : p[i].rem_bt;
                 
+                // Log Gantt event for this time slice
+                int gantt_start = current_time;
+                
                 // Advance time
                 // Note: In real RR, new processes arriving during this time 
                 // would enter queue. Here we iterate array which mimics RR 
                 // if array is sorted by AT roughly.
                 current_time += exec_time;
                 p[i].rem_bt -= exec_time;
+                
+                // Log the time slice
+                add_gantt_event(p[i].pid, gantt_start, current_time);
 
                 if(p[i].rem_bt == 0) {
                     p[i].ct = current_time;
@@ -49,3 +55,4 @@ void run_rr(Process p[], int n, int tq) {
     }
     print_table(p, n, "Round Robin");
 }
+

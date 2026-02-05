@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RMS - Rate Monotonic Scheduling</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-y: auto;
+            background: #f1f5f9;
+        }
+
+        .algo-page {
+            padding: 2rem 3rem 5rem 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .algo-hero {
+            background: linear-gradient(135deg, #ea580c 0%, #fb923c 100%);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            position: relative;
+            border: 3px solid #c2410c;
+        }
+
+        .algo-hero h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .algo-hero .subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .btn-source {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-source:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-source svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            border: 2px solid #cbd5e1;
+        }
+
+        .content-section h2 {
+            color: #c2410c;
+            margin-bottom: 1.25rem;
+            font-size: 1.5rem;
+            border-bottom: 3px solid #ea580c;
+            padding-bottom: 0.75rem;
+        }
+
+        .content-section h3 {
+            color: #1e293b;
+            margin: 1.5rem 0 1rem 0;
+            font-size: 1.2rem;
+        }
+
+        .content-section p {
+            line-height: 1.9;
+            color: #475569;
+            margin-bottom: 1rem;
+        }
+
+        .content-section ul,
+        .content-section ol {
+            line-height: 1.9;
+            color: #475569;
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .content-section li {
+            margin-bottom: 0.75rem;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+            border: 2px solid #ea580c;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .formula-box .formula {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #9a3412;
+            font-family: 'Courier New', monospace;
+        }
+
+        .formula-box .formula-desc {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-top: 0.75rem;
+        }
+
+        .example-box {
+            background: #fffbeb;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .example-box h4 {
+            color: #b45309;
+            margin: 0 0 1rem 0;
+        }
+
+        .example-box p,
+        .example-box li {
+            color: #78350f;
+        }
+
+        .math-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .math-table th,
+        .math-table td {
+            border: 2px solid #cbd5e1;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .math-table th {
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+
+        .math-table tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .math-table .highlight-row {
+            background: #fef3c7 !important;
+            font-weight: 600;
+        }
+
+        .info-box {
+            background: #fff7ed;
+            border: 2px solid #ea580c;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .info-box strong {
+            color: #c2410c;
+        }
+
+        .info-box p {
+            color: #9a3412;
+            margin: 0;
+        }
+
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .pros,
+        .cons {
+            padding: 1.25rem;
+            border-radius: 12px;
+        }
+
+        .pros {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+        }
+
+        .cons {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+        }
+
+        .pros h4 {
+            color: #16a34a;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .cons h4 {
+            color: #dc2626;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .pros ul,
+        .cons ul {
+            margin: 0;
+            padding-left: 1.25rem;
+        }
+
+        .gantt-visual {
+            display: flex;
+            margin: 1rem 0;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .gantt-block {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 0;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="algo-page">
+        <a href="/" class="back-link">← Back to Simulator</a>
+
+        <div class="algo-hero">
+            <h1>Rate Monotonic Scheduling (RMS)</h1>
+            <p class="subtitle">Optimal Fixed-Priority Real-Time Scheduling</p>
+            <a href="https://github.com/gauri-dhanakshirur/CFS-Simulation/tree/main/RMS" target="_blank"
+                class="btn-source">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                </svg>
+                View Source Code
+            </a>
+        </div>
+
+        <section class="content-section">
+            <h2>Introduction</h2>
+            <p><strong>Rate Monotonic Scheduling (RMS)</strong> is a static-priority real-time scheduling algorithm. The
+                priority of each task is assigned based on its period: <strong>shorter period = higher
+                    priority</strong>. Priorities are fixed at design time and never change.</p>
+            <div class="info-box">
+                <strong>Optimality:</strong>
+                <p>RMS is optimal among all fixed-priority algorithms. If any fixed-priority algorithm can schedule a
+                    task set, RMS can too!</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Mathematical Formulas</h2>
+            <h3>Priority Assignment</h3>
+            <div class="formula-box">
+                <div class="formula">Priority ∝ 1/Period</div>
+                <div class="formula-desc">Task with shorter period gets higher priority (fixed at creation)</div>
+            </div>
+
+            <h3>Liu & Layland Schedulability Bound</h3>
+            <div class="formula-box">
+                <div class="formula">U = Σ(C<sub>i</sub>/T<sub>i</sub>) ≤ n(2<sup>1/n</sup> - 1)</div>
+                <div class="formula-desc">Where n = number of tasks, C = execution time, T = period</div>
+            </div>
+
+            <h3>Utilization Bound Table</h3>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>n (tasks)</th>
+                        <th>Bound n(2<sup>1/n</sup> - 1)</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>1.000</td>
+                        <td>100%</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>0.828</td>
+                        <td>82.8%</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>0.780</td>
+                        <td>78.0%</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>0.757</td>
+                        <td>75.7%</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>0.743</td>
+                        <td>74.3%</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>n → ∞</td>
+                        <td>ln(2) = 0.693</td>
+                        <td>69.3%</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box">
+                <strong>Key Insight:</strong>
+                <p>RMS can only guarantee schedulability up to ~69% CPU utilization for large n. EDF can achieve 100%!
+                </p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Detailed Example</h2>
+            <div class="example-box">
+                <h4>Problem Setup</h4>
+                <p>Periodic tasks (C = execution time, T = period):</p>
+            </div>
+
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>C (Burst)</th>
+                        <th>T (Period)</th>
+                        <th>Priority</th>
+                        <th>U<sub>i</sub></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>T1</td>
+                        <td>1</td>
+                        <td>4</td>
+                        <td>High (shortest T)</td>
+                        <td>0.25</td>
+                    </tr>
+                    <tr>
+                        <td>T2</td>
+                        <td>2</td>
+                        <td>6</td>
+                        <td>Medium</td>
+                        <td>0.33</td>
+                    </tr>
+                    <tr>
+                        <td>T3</td>
+                        <td>3</td>
+                        <td>12</td>
+                        <td>Low (longest T)</td>
+                        <td>0.25</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td colspan="4"><strong>Total</strong></td>
+                        <td><strong>0.83</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Schedulability Check</h3>
+            <div class="example-box">
+                <h4>Calculation</h4>
+                <p>n = 3 tasks, Bound = 3(2<sup>1/3</sup> - 1) = 3 × 0.26 = <strong>0.78</strong></p>
+                <p>Total U = 0.83 > 0.78 → <strong>Fails LUB test!</strong></p>
+                <p>But wait... RMS might still schedule it. Need exact analysis.</p>
+            </div>
+
+            <h3>Gantt Chart (First 12 time units)</h3>
+            <div class="gantt-visual">
+                <div class="gantt-block" style="flex: 1; background: #ef4444;">T1</div>
+                <div class="gantt-block" style="flex: 2; background: #f59e0b;">T2</div>
+                <div class="gantt-block" style="flex: 1; background: #6366f1;">T3</div>
+                <div class="gantt-block" style="flex: 1; background: #ef4444;">T1</div>
+                <div class="gantt-block" style="flex: 1; background: #6366f1;">T3</div>
+                <div class="gantt-block" style="flex: 2; background: #f59e0b;">T2</div>
+                <div class="gantt-block" style="flex: 1; background: #ef4444;">T1</div>
+                <div class="gantt-block" style="flex: 1; background: #6366f1;">T3</div>
+                <div class="gantt-block" style="flex: 1; background: #cbd5e1; color: #333;">Idle</div>
+                <div class="gantt-block" style="flex: 1; background: #ef4444;">T1</div>
+            </div>
+
+            <p>All tasks meet their deadlines! RMS succeeds even though LUB test failed (LUB is sufficient, not
+                necessary).</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Advantages & Disadvantages</h2>
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>Advantages</h4>
+                    <ul>
+                        <li>Simple fixed-priority assignment</li>
+                        <li>Easy to implement</li>
+                        <li>Low runtime overhead</li>
+                        <li>Easy to analyze offline</li>
+                        <li>Optimal for fixed-priority</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>Disadvantages</h4>
+                    <ul>
+                        <li>Only ~69% max utilization</li>
+                        <li>Requires known periods</li>
+                        <li>Not flexible for aperiodic tasks</li>
+                        <li>Priority inversion possible</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>

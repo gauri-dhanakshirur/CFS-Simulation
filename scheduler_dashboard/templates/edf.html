@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDF - Earliest Deadline First</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-y: auto;
+            background: #f1f5f9;
+        }
+
+        .algo-page {
+            padding: 2rem 3rem 5rem 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .algo-hero {
+            background: linear-gradient(135deg, #0891b2 0%, #22d3ee 100%);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            position: relative;
+            border: 3px solid #0e7490;
+        }
+
+        .algo-hero h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .algo-hero .subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .btn-source {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-source:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-source svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            border: 2px solid #cbd5e1;
+        }
+
+        .content-section h2 {
+            color: #0e7490;
+            margin-bottom: 1.25rem;
+            font-size: 1.5rem;
+            border-bottom: 3px solid #0891b2;
+            padding-bottom: 0.75rem;
+        }
+
+        .content-section h3 {
+            color: #1e293b;
+            margin: 1.5rem 0 1rem 0;
+            font-size: 1.2rem;
+        }
+
+        .content-section p {
+            line-height: 1.9;
+            color: #475569;
+            margin-bottom: 1rem;
+        }
+
+        .content-section ul,
+        .content-section ol {
+            line-height: 1.9;
+            color: #475569;
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .content-section li {
+            margin-bottom: 0.75rem;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%);
+            border: 2px solid #0891b2;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .formula-box .formula {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0e7490;
+            font-family: 'Courier New', monospace;
+        }
+
+        .formula-box .formula-desc {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-top: 0.75rem;
+        }
+
+        .example-box {
+            background: #fffbeb;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .example-box h4 {
+            color: #b45309;
+            margin: 0 0 1rem 0;
+        }
+
+        .example-box p,
+        .example-box li {
+            color: #78350f;
+        }
+
+        .math-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .math-table th,
+        .math-table td {
+            border: 2px solid #cbd5e1;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .math-table th {
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+
+        .math-table tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .math-table .highlight-row {
+            background: #fef3c7 !important;
+            font-weight: 600;
+        }
+
+        .info-box {
+            background: #ecfeff;
+            border: 2px solid #0891b2;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .info-box strong {
+            color: #0e7490;
+        }
+
+        .info-box p {
+            color: #155e75;
+            margin: 0;
+        }
+
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .pros,
+        .cons {
+            padding: 1.25rem;
+            border-radius: 12px;
+        }
+
+        .pros {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+        }
+
+        .cons {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+        }
+
+        .pros h4 {
+            color: #16a34a;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .cons h4 {
+            color: #dc2626;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .pros ul,
+        .cons ul {
+            margin: 0;
+            padding-left: 1.25rem;
+        }
+
+        .gantt-visual {
+            display: flex;
+            margin: 1rem 0;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .gantt-block {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 0;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="algo-page">
+        <a href="/" class="back-link">← Back to Simulator</a>
+
+        <div class="algo-hero">
+            <h1>Earliest Deadline First (EDF)</h1>
+            <p class="subtitle">Optimal Dynamic Real-Time Scheduling</p>
+            <a href="https://github.com/gauri-dhanakshirur/CFS-Simulation/tree/main/EDF" target="_blank"
+                class="btn-source">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                </svg>
+                View Source Code
+            </a>
+        </div>
+
+        <section class="content-section">
+            <h2>Introduction</h2>
+            <p><strong>Earliest Deadline First (EDF)</strong> is a dynamic priority real-time scheduling algorithm. At
+                any point in time, the process with the closest <strong>absolute deadline</strong> gets the highest
+                priority and runs first.</p>
+            <div class="info-box">
+                <strong>Optimality:</strong>
+                <p>EDF is provably optimal for single-processor real-time systems. If ANY algorithm can schedule a set
+                    of tasks without missing deadlines, EDF can too!</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Mathematical Formulas</h2>
+            <h3>Deadline Calculation</h3>
+            <div class="formula-box">
+                <div class="formula">Absolute Deadline = Arrival Time + Relative Deadline</div>
+                <div class="formula-desc">Priority is inversely proportional to absolute deadline. Closest deadline =
+                    highest priority.</div>
+            </div>
+
+            <h3>Schedulability Test</h3>
+            <div class="formula-box">
+                <div class="formula">U = Σ(C<sub>i</sub> / T<sub>i</sub>) ≤ 1.0 (100%)</div>
+                <div class="formula-desc">Total CPU utilization must not exceed 100%. EDF can achieve full utilization!
+                </div>
+            </div>
+
+            <div class="example-box">
+                <h4>Utilization Example</h4>
+                <p>Given periodic tasks:</p>
+                <ul>
+                    <li>Task A: C=1ms, T=4ms → U_A = 1/4 = 0.25</li>
+                    <li>Task B: C=2ms, T=6ms → U_B = 2/6 = 0.33</li>
+                    <li>Task C: C=3ms, T=12ms → U_C = 3/12 = 0.25</li>
+                </ul>
+                <p><strong>Total U = 0.25 + 0.33 + 0.25 = 0.83 ≤ 1.0 ✓ Schedulable!</strong></p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Detailed Example</h2>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Process</th>
+                        <th>Arrival</th>
+                        <th>Burst</th>
+                        <th>Deadline</th>
+                        <th>Abs. Deadline</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>P1</td>
+                        <td>0</td>
+                        <td>3</td>
+                        <td>7</td>
+                        <td>0+7 = 7</td>
+                    </tr>
+                    <tr>
+                        <td>P2</td>
+                        <td>2</td>
+                        <td>4</td>
+                        <td>4</td>
+                        <td>2+4 = 6</td>
+                    </tr>
+                    <tr>
+                        <td>P3</td>
+                        <td>4</td>
+                        <td>2</td>
+                        <td>5</td>
+                        <td>4+5 = 9</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Execution Trace</h3>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Ready (by deadline)</th>
+                        <th>Running</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0-2</td>
+                        <td>P1(DL=7)</td>
+                        <td>P1</td>
+                        <td>Only P1 available</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>P1(DL=7), P2(DL=6)</td>
+                        <td>P2</td>
+                        <td>P2 has closer deadline!</td>
+                    </tr>
+                    <tr>
+                        <td>2-6</td>
+                        <td>-</td>
+                        <td>P2</td>
+                        <td>P2 runs to completion</td>
+                    </tr>
+                    <tr>
+                        <td>6-7</td>
+                        <td>P1(DL=7), P3(DL=9)</td>
+                        <td>P1</td>
+                        <td>P1 closer deadline</td>
+                    </tr>
+                    <tr>
+                        <td>7-9</td>
+                        <td>P3(DL=9)</td>
+                        <td>P3</td>
+                        <td>P3 completes</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Gantt Chart</h3>
+            <div class="gantt-visual">
+                <div class="gantt-block" style="flex: 2; background: #6366f1;">P1</div>
+                <div class="gantt-block" style="flex: 4; background: #ec4899;">P2</div>
+                <div class="gantt-block" style="flex: 1; background: #6366f1;">P1</div>
+                <div class="gantt-block" style="flex: 2; background: #14b8a6;">P3</div>
+            </div>
+
+            <h3>Results</h3>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Process</th>
+                        <th>Deadline</th>
+                        <th>CT</th>
+                        <th>Met?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>P1</td>
+                        <td>7</td>
+                        <td>7</td>
+                        <td>✓ Yes (7≤7)</td>
+                    </tr>
+                    <tr>
+                        <td>P2</td>
+                        <td>6</td>
+                        <td>6</td>
+                        <td>✓ Yes (6≤6)</td>
+                    </tr>
+                    <tr>
+                        <td>P3</td>
+                        <td>9</td>
+                        <td>9</td>
+                        <td>✓ Yes (9≤9)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="content-section">
+            <h2>EDF vs RMS Comparison</h2>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>EDF</th>
+                        <th>RMS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Priority Type</td>
+                        <td>Dynamic</td>
+                        <td>Static</td>
+                    </tr>
+                    <tr>
+                        <td>Max Utilization</td>
+                        <td><strong>100%</strong></td>
+                        <td>~69%</td>
+                    </tr>
+                    <tr>
+                        <td>Overhead</td>
+                        <td>Higher</td>
+                        <td>Lower</td>
+                    </tr>
+                    <tr>
+                        <td>Optimality</td>
+                        <td>Optimal (all task sets)</td>
+                        <td>Optimal (fixed-priority only)</td>
+                    </tr>
+                    <tr>
+                        <td>Analysis</td>
+                        <td>More complex</td>
+                        <td>Simpler</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="content-section">
+            <h2>Advantages & Disadvantages</h2>
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>Advantages</h4>
+                    <ul>
+                        <li>Optimal for single-processor</li>
+                        <li>Can achieve 100% utilization</li>
+                        <li>Works with periodic/aperiodic tasks</li>
+                        <li>No starvation</li>
+                        <li>Minimizes deadline misses</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>❌ Disadvantages</h4>
+                    <ul>
+                        <li>Higher runtime overhead</li>
+                        <li>Domino effect when overloaded</li>
+                        <li>Harder to analyze than RMS</li>
+                        <li>Requires accurate deadlines</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>

@@ -41,6 +41,34 @@ typedef struct {
     char action[20]; // e.g., "RUNNING", "COMPLETED"
 } ExecutionLog;
 
-void print_table(Process p[], int n, const char* algo_name);
+// --- Gantt Chart Data ---
+typedef struct {
+    int pid;
+    int start_time;
+    int end_time;
+} GanttEvent;
 
+#define MAX_GANTT_EVENTS 1000
+extern GanttEvent gantt_log[MAX_GANTT_EVENTS];
+extern int gantt_log_count;
+
+// --- VRuntime Tracking (CFS-specific) ---
+typedef struct {
+    int real_time;
+    int pid;
+    double vruntime;
+} VRuntimeLog;
+
+#define MAX_VRUNTIME_LOGS 1000
+extern VRuntimeLog vruntime_log[MAX_VRUNTIME_LOGS];
+extern int vruntime_log_count;
+
+// --- Function Declarations ---
+void print_table(Process p[], int n, const char* algo_name);
 void reset_processes(Process p[], int n);
+void reset_logs(void);
+void add_gantt_event(int pid, int start, int end);
+void add_vruntime_log(int real_time, int pid, double vruntime);
+void print_gantt_json(void);
+void print_vruntime_json(void);
+double calculate_jain_fairness(Process p[], int n);

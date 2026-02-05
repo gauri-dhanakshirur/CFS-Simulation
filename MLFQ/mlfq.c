@@ -6,6 +6,10 @@ void run_mlfq(Process p[], int n) {
     int tq0 = 2;
     int current_time = 0;
     int completed = 0;
+    
+    // Gantt tracking
+    int last_pid = -1;
+    int gantt_start = 0;
 
     while(completed != n) {
         int idx = -1;
@@ -32,6 +36,15 @@ void run_mlfq(Process p[], int n) {
         }
 
         if(idx != -1) {
+            // Check for context switch
+            if(last_pid != p[idx].pid && last_pid != -1) {
+                add_gantt_event(last_pid, gantt_start, current_time);
+                gantt_start = current_time;
+            } else if(last_pid == -1) {
+                gantt_start = current_time;
+            }
+            last_pid = p[idx].pid;
+            
             if(!p[idx].started) {
                 p[idx].start_time = current_time;
                 p[idx].rt = current_time - p[idx].at;
@@ -46,6 +59,9 @@ void run_mlfq(Process p[], int n) {
                 
                 // If finished
                 if(p[idx].rem_bt == 0) {
+                    add_gantt_event(p[idx].pid, gantt_start, current_time);
+                    last_pid = -1;
+                    
                     p[idx].ct = current_time;
                     p[idx].completed = true;
                     completed++;
@@ -54,6 +70,8 @@ void run_mlfq(Process p[], int n) {
                 // In tick-by-tick, we assume if it didn't finish, we demote it 
                 // Logic simplified: if rem_bt > 0 after 2 ticks (conceptually)
                 else if ((p[idx].bt - p[idx].rem_bt) % tq0 == 0) {
+                    add_gantt_event(p[idx].pid, gantt_start, current_time);
+                    last_pid = -1;
                     p[idx].queue_level = 1; // Demote to Q1
                 }
             } 
@@ -63,6 +81,9 @@ void run_mlfq(Process p[], int n) {
                 p[idx].rem_bt--;
                 current_time++;
                  if(p[idx].rem_bt == 0) {
+                    add_gantt_event(p[idx].pid, gantt_start, current_time);
+                    last_pid = -1;
+                    
                     p[idx].ct = current_time;
                     p[idx].completed = true;
                     completed++;
@@ -75,8 +96,13 @@ void run_mlfq(Process p[], int n) {
             }
 
         } else {
+            if(last_pid != -1) {
+                add_gantt_event(last_pid, gantt_start, current_time);
+                last_pid = -1;
+            }
             current_time++;
         }
     }
     print_table(p, n, "MLFQ");
 }
+

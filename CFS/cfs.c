@@ -163,6 +163,10 @@ void run_cfs(Process p[], int n) {
     int current_time = 0;
     int completed_count = 0;
     Process* current_process = NULL;
+    
+    // Gantt tracking variables
+    int gantt_start_time = 0;
+    int last_pid = -1;
 
     // Simulation Loop (Adapted from your logic)
     while (completed_count < n) {
@@ -178,8 +182,13 @@ void run_cfs(Process p[], int n) {
             }
         }
 
-        // B. Preemption Check
+        // B. Preemption Check - Log Gantt event if context switch happens
         if (current_process != NULL) {
+            // Log the Gantt event for the previous run segment
+            if (last_pid != -1 && gantt_start_time < current_time) {
+                add_gantt_event(last_pid, gantt_start_time, current_time);
+            }
+            
             root = insert(root, current_process);
             current_process = NULL;
         }
@@ -189,6 +198,10 @@ void run_cfs(Process p[], int n) {
             Node* minNode = minValueNode(root);
             current_process = minNode->process;
             root = deleteNode(root, current_process);
+            
+            // Track new Gantt segment start
+            gantt_start_time = current_time;
+            last_pid = current_process->pid;
 
             if (!current_process->started) {
                 current_process->start_time = current_time;
@@ -203,6 +216,9 @@ void run_cfs(Process p[], int n) {
             
             double delta = 1.0 * (BASE_WEIGHT / current_process->weight);
             current_process->vruntime += delta;
+            
+            // Log vruntime after update
+            add_vruntime_log(current_time, current_process->pid, current_process->vruntime);
 
             current_time++;
 
@@ -211,6 +227,10 @@ void run_cfs(Process p[], int n) {
                 current_process->tat = current_process->ct - current_process->at;
                 current_process->wt = current_process->tat - current_process->bt;
                 current_process->completed = true;
+                
+                // Log final Gantt event for completed process
+                add_gantt_event(current_process->pid, gantt_start_time, current_time);
+                last_pid = -1; // Reset so we don't double-log
                 
                 completed_count++;
                 current_process = NULL; // Don't re-insert
@@ -222,3 +242,4 @@ void run_cfs(Process p[], int n) {
 
     print_table(p, n, "CFS Scheduling");
 }
+

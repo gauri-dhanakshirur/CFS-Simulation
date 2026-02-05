@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCFS - First Come First Serve</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-y: auto;
+            background: #f1f5f9;
+        }
+
+        .algo-page {
+            padding: 2rem 3rem 5rem 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .algo-hero {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            position: relative;
+            border: 3px solid #047857;
+        }
+
+        .algo-hero h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .algo-hero .subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .btn-source {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-source:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-source svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            border: 2px solid #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .content-section h2 {
+            color: #059669;
+            margin-bottom: 1.25rem;
+            font-size: 1.5rem;
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 0.75rem;
+        }
+
+        .content-section h3 {
+            color: #1e293b;
+            margin: 1.5rem 0 1rem 0;
+            font-size: 1.2rem;
+        }
+
+        .content-section p {
+            line-height: 1.9;
+            color: #475569;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .content-section ul,
+        .content-section ol {
+            line-height: 1.9;
+            color: #475569;
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .content-section li {
+            margin-bottom: 0.75rem;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .formula-box .formula {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #047857;
+            font-family: 'Courier New', monospace;
+        }
+
+        .formula-box .formula-desc {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-top: 0.75rem;
+            line-height: 1.6;
+        }
+
+        .example-box {
+            background: #fffbeb;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .example-box h4 {
+            color: #b45309;
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+        }
+
+        .example-box p,
+        .example-box li {
+            color: #78350f;
+        }
+
+        .math-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .math-table th,
+        .math-table td {
+            border: 2px solid #cbd5e1;
+            padding: 0.75rem 1rem;
+            text-align: center;
+        }
+
+        .math-table th {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .math-table tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .math-table .highlight-row {
+            background: #fef3c7 !important;
+            font-weight: 600;
+        }
+
+        .step-box {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 0.75rem 0;
+        }
+
+        .step-box .step-num {
+            display: inline-block;
+            background: #22c55e;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: 700;
+            margin-right: 0.75rem;
+        }
+
+        .step-box .step-title {
+            font-weight: 600;
+            color: #166534;
+        }
+
+        .step-box p {
+            margin: 0.5rem 0 0 2.5rem;
+            color: #166534;
+        }
+
+        .warning-box {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+        }
+
+        .warning-box strong {
+            color: #b91c1c;
+        }
+
+        .warning-box p {
+            color: #991b1b;
+            margin: 0;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+        }
+
+        .info-box strong {
+            color: #1d4ed8;
+        }
+
+        .info-box p {
+            color: #1e40af;
+            margin: 0;
+        }
+
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .pros,
+        .cons {
+            padding: 1.25rem;
+            border-radius: 12px;
+        }
+
+        .pros {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+        }
+
+        .cons {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+        }
+
+        .pros h4 {
+            color: #16a34a;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .cons h4 {
+            color: #dc2626;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .pros ul,
+        .cons ul {
+            margin: 0;
+            padding-left: 1.25rem;
+        }
+
+        .pros li,
+        .cons li {
+            margin-bottom: 0.5rem;
+            color: #475569;
+        }
+
+        .gantt-visual {
+            display: flex;
+            margin: 1rem 0;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .gantt-block {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            padding: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .gantt-timeline {
+            display: flex;
+            margin-top: 0.25rem;
+        }
+
+        .gantt-timeline span {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        code {
+            background: #e2e8f0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            border: 1px solid #cbd5e1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="algo-page">
+        <a href="/" class="back-link">← Back to Simulator</a>
+
+        <div class="algo-hero">
+            <h1>First Come First Serve (FCFS)</h1>
+            <p class="subtitle">The Simplest CPU Scheduling Algorithm</p>
+            <a href="https://github.com/gauri-dhanakshirur/CFS-Simulation/tree/main/FCFS" target="_blank"
+                class="btn-source">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                </svg>
+                View Source Code
+            </a>
+        </div>
+
+        <section class="content-section">
+            <h2>Introduction to FCFS</h2>
+            <p>
+                <strong>First Come First Serve (FCFS)</strong> is the simplest CPU scheduling algorithm. It works
+                exactly like a queue at a bank or grocery store: the process that arrives first gets served first,
+                regardless of how long it takes to complete.
+            </p>
+            <p>
+                FCFS is a <strong>non-preemptive</strong> algorithm, meaning once a process starts executing, it
+                runs to completion without interruption. No process can "cut in line" — even if a very short task
+                arrives while a long task is running.
+            </p>
+
+            <div class="info-box">
+                <strong>Key Property:</strong>
+                <p>FCFS is non-preemptive and uses a FIFO (First-In-First-Out) queue. The order of arrival
+                    completely determines the execution order.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Mathematical Formulas</h2>
+
+            <h3>Waiting Time</h3>
+            <div class="formula-box">
+                <div class="formula">Waiting Time (WT) = Start Time - Arrival Time</div>
+                <div class="formula-desc">
+                    The time a process spends waiting in the ready queue before it starts executing
+                </div>
+            </div>
+
+            <h3>Turnaround Time</h3>
+            <div class="formula-box">
+                <div class="formula">Turnaround Time (TAT) = Completion Time - Arrival Time</div>
+                <div class="formula-desc">
+                    Total time from arrival to completion = Waiting Time + Burst Time
+                </div>
+            </div>
+
+            <h3>Response Time</h3>
+            <div class="formula-box">
+                <div class="formula">Response Time (RT) = First Run Time - Arrival Time</div>
+                <div class="formula-desc">
+                    In FCFS, Response Time = Waiting Time (process runs to completion once started)
+                </div>
+            </div>
+
+            <h3>Average Metrics</h3>
+            <div class="formula-box">
+                <div class="formula">Average WT = Σ(WT<sub>i</sub>) / n</div>
+                <div class="formula-desc">Sum of all waiting times divided by number of processes</div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Step-by-Step Algorithm</h2>
+
+            <div class="step-box">
+                <span class="step-num">1</span>
+                <span class="step-title">Initialize Queue</span>
+                <p>Create an empty FIFO queue to hold arriving processes.</p>
+            </div>
+
+            <div class="step-box">
+                <span class="step-num">2</span>
+                <span class="step-title">Enqueue Arrivals</span>
+                <p>As processes arrive, add them to the back of the queue in arrival order.</p>
+            </div>
+
+            <div class="step-box">
+                <span class="step-num">3</span>
+                <span class="step-title">Dequeue & Execute</span>
+                <p>Take the process at the front of the queue and execute it completely.</p>
+            </div>
+
+            <div class="step-box">
+                <span class="step-num">4</span>
+                <span class="step-title">Record Metrics</span>
+                <p>When process completes, calculate its WT and TAT.</p>
+            </div>
+
+            <div class="step-box">
+                <span class="step-num">5</span>
+                <span class="step-title">Repeat Until Empty</span>
+                <p>Continue until all processes are complete and queue is empty.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Detailed Example</h2>
+
+            <div class="example-box">
+                <h4>Problem Setup</h4>
+                <p>Given processes with the following arrival and burst times:</p>
+            </div>
+
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Process</th>
+                        <th>Arrival Time</th>
+                        <th>Burst Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>P1</td>
+                        <td>0</td>
+                        <td>24</td>
+                    </tr>
+                    <tr>
+                        <td>P2</td>
+                        <td>1</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td>P3</td>
+                        <td>2</td>
+                        <td>3</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Gantt Chart</h3>
+            <div class="gantt-visual">
+                <div class="gantt-block" style="flex: 24; background: #6366f1;">P1 (0-24)</div>
+                <div class="gantt-block" style="flex: 3; background: #ec4899;">P2 (24-27)</div>
+                <div class="gantt-block" style="flex: 3; background: #14b8a6;">P3 (27-30)</div>
+            </div>
+            <div class="gantt-timeline">
+                <span style="flex: 1;">0</span>
+                <span style="flex: 24;"></span>
+                <span>24</span>
+                <span style="flex: 3;"></span>
+                <span>27</span>
+                <span style="flex: 3;"></span>
+                <span>30</span>
+            </div>
+
+            <h3>Step-by-Step Calculations</h3>
+
+            <div class="example-box">
+                <h4>Process P1</h4>
+                <ul>
+                    <li>Arrival Time (AT) = 0</li>
+                    <li>Start Time = 0 (CPU is idle, P1 starts immediately)</li>
+                    <li>Completion Time (CT) = 0 + 24 = <strong>24</strong></li>
+                    <li>Turnaround Time = CT - AT = 24 - 0 = <strong>24</strong></li>
+                    <li>Waiting Time = TAT - BT = 24 - 24 = <strong>0</strong></li>
+                </ul>
+            </div>
+
+            <div class="example-box">
+                <h4>Process P2</h4>
+                <ul>
+                    <li>Arrival Time (AT) = 1</li>
+                    <li>Start Time = 24 (must wait for P1 to complete)</li>
+                    <li>Completion Time (CT) = 24 + 3 = <strong>27</strong></li>
+                    <li>Turnaround Time = CT - AT = 27 - 1 = <strong>26</strong></li>
+                    <li>Waiting Time = TAT - BT = 26 - 3 = <strong>23</strong></li>
+                </ul>
+            </div>
+
+            <div class="example-box">
+                <h4>Process P3</h4>
+                <ul>
+                    <li>Arrival Time (AT) = 2</li>
+                    <li>Start Time = 27 (must wait for P1 and P2)</li>
+                    <li>Completion Time (CT) = 27 + 3 = <strong>30</strong></li>
+                    <li>Turnaround Time = CT - AT = 30 - 2 = <strong>28</strong></li>
+                    <li>Waiting Time = TAT - BT = 28 - 3 = <strong>25</strong></li>
+                </ul>
+            </div>
+
+            <h3>Final Results Table</h3>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Process</th>
+                        <th>AT</th>
+                        <th>BT</th>
+                        <th>CT</th>
+                        <th>TAT</th>
+                        <th>WT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>P1</td>
+                        <td>0</td>
+                        <td>24</td>
+                        <td>24</td>
+                        <td>24</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>P2</td>
+                        <td>1</td>
+                        <td>3</td>
+                        <td>27</td>
+                        <td>26</td>
+                        <td>23</td>
+                    </tr>
+                    <tr>
+                        <td>P3</td>
+                        <td>2</td>
+                        <td>3</td>
+                        <td>30</td>
+                        <td>28</td>
+                        <td>25</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td colspan="4"><strong>Averages</strong></td>
+                        <td><strong>26</strong></td>
+                        <td><strong>16</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p><strong>Average Waiting Time</strong> = (0 + 23 + 25) / 3 = 48/3 = <strong>16 ms</strong></p>
+            <p><strong>Average Turnaround Time</strong> = (24 + 26 + 28) / 3 = 78/3 = <strong>26 ms</strong></p>
+        </section>
+
+        <section class="content-section">
+            <h2>The Convoy Effect</h2>
+
+            <div class="warning-box">
+                <strong>Major Problem with FCFS:</strong>
+                <p>When a long process arrives first, all shorter processes must wait behind it. This is called
+                    the "Convoy Effect" — like being stuck behind a slow truck on a single-lane road!</p>
+            </div>
+
+            <p>In our example above, P2 and P3 (each needing only 3ms) had to wait 23 and 25 ms respectively
+                because P1 (needing 24ms) arrived first. If we had used SJF instead:</p>
+
+            <div class="example-box">
+                <h4>What if we used SJF instead?</h4>
+                <ul>
+                    <li>P2 executes: 1-4 (WT=0)</li>
+                    <li>P3 executes: 4-7 (WT=2)</li>
+                    <li>P1 executes: 7-31 (WT=7)</li>
+                </ul>
+                <p><strong>Average WT with SJF = (0 + 2 + 7)/3 = 3 ms</strong> (vs 16 ms with FCFS!)</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Advantages & Disadvantages</h2>
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>Advantages</h4>
+                    <ul>
+                        <li>Extremely simple to implement</li>
+                        <li>No complex calculations needed</li>
+                        <li>No starvation — all processes eventually run</li>
+                        <li>Fair in terms of arrival order</li>
+                        <li>Zero scheduling overhead</li>
+                        <li>Predictable, deterministic behavior</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>Disadvantages</h4>
+                    <ul>
+                        <li>Convoy Effect — poor average wait time</li>
+                        <li>Not suitable for interactive systems</li>
+                        <li>Cannot prioritize important processes</li>
+                        <li>Long response time for short processes</li>
+                        <li>Poor CPU utilization with I/O-bound processes</li>
+                        <li>Non-preemptive — no responsiveness</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>When to Use FCFS</h2>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Use FCFS When...</th>
+                        <th>Don't Use FCFS When...</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Simple batch processing systems</td>
+                        <td>Interactive/time-sharing systems</td>
+                    </tr>
+                    <tr>
+                        <td>All processes have similar burst times</td>
+                        <td>Workloads have varying burst times</td>
+                    </tr>
+                    <tr>
+                        <td>Order of execution doesn't matter</td>
+                        <td>Response time is critical</td>
+                    </tr>
+                    <tr>
+                        <td>Print queues, background jobs</td>
+                        <td>Real-time or GUI applications</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+</body>
+
+</html>

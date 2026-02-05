@@ -28,17 +28,68 @@ def index():
     """Serves the main dashboard page."""
     return render_template('index.html')
 
+# Algorithm detail page routes
+@app.route('/algorithm/<algo_name>')
+def algorithm_page(algo_name):
+    """Serves individual algorithm detail pages."""
+    valid_algos = ['cfs', 'fcfs', 'rr', 'sjf', 'priority', 'mlfq', 'edf', 'rms', 'propshare']
+    if algo_name.lower() in valid_algos:
+        return render_template(f'{algo_name.lower()}.html')
+    return render_template('index.html')  # Fallback to main page
+
+
+import json
+
 def parse_c_output(output_text):
-    """Parses the fixed-width text table from the C program into a list of dictionaries."""
+    """Parses the fixed-width text table and new JSON data from the C program."""
     lines = output_text.strip().split('\n')
     results = []
     averages = {}
+    gantt_data = []
+    vruntime_data = []
     
     # Regex to find the table header line (e.g., "PID   AT   BT...")
     header_regex = re.compile(r'PID\s+AT\s+BT\s+WT\s+TAT\s+RT')
     
     in_table = False
+    in_gantt = False
+    in_vruntime = False
+    gantt_json_str = ""
+    vruntime_json_str = ""
+    
     for line in lines:
+        # Detect Gantt data block
+        if '--- GANTT_DATA_START ---' in line:
+            in_gantt = True
+            gantt_json_str = ""
+            continue
+        if '--- GANTT_DATA_END ---' in line:
+            in_gantt = False
+            try:
+                gantt_data = json.loads(gantt_json_str)
+            except json.JSONDecodeError:
+                gantt_data = []
+            continue
+        if in_gantt:
+            gantt_json_str += line.strip()
+            continue
+            
+        # Detect VRuntime data block
+        if '--- VRUNTIME_DATA_START ---' in line:
+            in_vruntime = True
+            vruntime_json_str = ""
+            continue
+        if '--- VRUNTIME_DATA_END ---' in line:
+            in_vruntime = False
+            try:
+                vruntime_data = json.loads(vruntime_json_str)
+            except json.JSONDecodeError:
+                vruntime_data = []
+            continue
+        if in_vruntime:
+            vruntime_json_str += line.strip()
+            continue
+        
         # Detect start of table content
         if header_regex.search(line):
             in_table = True
@@ -71,8 +122,15 @@ def parse_c_output(output_text):
                 averages['cpu_util'] = line.split('=')[1].strip()
             elif 'Throughput' in line:
                 averages['throughput'] = line.split('=')[1].strip()
+            elif 'Jain Fairness Index' in line:
+                averages['fairness_index'] = line.split('=')[1].strip()
 
-    return {'processes': results, 'averages': averages}
+    return {
+        'processes': results, 
+        'averages': averages,
+        'gantt': gantt_data,
+        'vruntime': vruntime_data
+    }
 
 
 @app.route('/api/simulate', methods=['POST'])

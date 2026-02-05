@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFS - Completely Fair Scheduler</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-y: auto;
+            background: #f1f5f9;
+        }
+
+        .algo-page {
+            padding: 2rem 3rem 5rem 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .algo-hero {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            position: relative;
+            border: 3px solid #4338ca;
+        }
+
+        .algo-hero h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .algo-hero .subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .btn-source {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-source:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-source svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            border: 2px solid #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .content-section h2 {
+            color: #4f46e5;
+            margin-bottom: 1.25rem;
+            font-size: 1.5rem;
+            border-bottom: 3px solid #6366f1;
+            padding-bottom: 0.75rem;
+        }
+
+        .content-section h3 {
+            color: #1e293b;
+            margin: 1.5rem 0 1rem 0;
+            font-size: 1.2rem;
+        }
+
+        .content-section p {
+            line-height: 1.9;
+            color: #475569;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .content-section ul,
+        .content-section ol {
+            line-height: 1.9;
+            color: #475569;
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .content-section li {
+            margin-bottom: 0.75rem;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .formula-box .formula {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3730a3;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.5px;
+        }
+
+        .formula-box .formula-desc {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-top: 0.75rem;
+            line-height: 1.6;
+        }
+
+        .example-box {
+            background: #fffbeb;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .example-box h4 {
+            color: #b45309;
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+        }
+
+        .example-box p,
+        .example-box li {
+            color: #78350f;
+        }
+
+        .math-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .math-table th,
+        .math-table td {
+            border: 2px solid #cbd5e1;
+            padding: 0.75rem 1rem;
+            text-align: center;
+        }
+
+        .math-table th {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .math-table tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .math-table .highlight-row {
+            background: #fef3c7 !important;
+            font-weight: 600;
+        }
+
+        .step-box {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 0.75rem 0;
+        }
+
+        .step-box .step-num {
+            display: inline-block;
+            background: #22c55e;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: 700;
+            margin-right: 0.75rem;
+        }
+
+        .step-box .step-title {
+            font-weight: 600;
+            color: #166534;
+        }
+
+        .step-box p {
+            margin: 0.5rem 0 0 2.5rem;
+            color: #166534;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+        }
+
+        .info-box strong {
+            color: #1d4ed8;
+        }
+
+        .info-box p {
+            color: #1e40af;
+            margin: 0;
+        }
+
+        .warning-box {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+        }
+
+        .warning-box strong {
+            color: #b91c1c;
+        }
+
+        .warning-box p {
+            color: #991b1b;
+            margin: 0;
+        }
+
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .pros,
+        .cons {
+            padding: 1.25rem;
+            border-radius: 12px;
+        }
+
+        .pros {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+        }
+
+        .cons {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+        }
+
+        .pros h4 {
+            color: #16a34a;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .cons h4 {
+            color: #dc2626;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .pros ul,
+        .cons ul {
+            margin: 0;
+            padding-left: 1.25rem;
+        }
+
+        .pros li,
+        .cons li {
+            margin-bottom: 0.5rem;
+            color: #475569;
+        }
+
+        code {
+            background: #e2e8f0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            border: 1px solid #cbd5e1;
+        }
+
+        .timeline-diagram {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+            overflow-x: auto;
+            padding: 0.5rem 0;
+        }
+
+        .timeline-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 60px;
+        }
+
+        .timeline-block .process {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .timeline-block .time {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="algo-page">
+        <a href="/" class="back-link">← Back to Simulator</a>
+
+        <div class="algo-hero">
+            <h1>Completely Fair Scheduler (CFS)</h1>
+            <p class="subtitle">Linux's Default Process Scheduler Since Kernel 2.6.23 (October 2007)</p>
+            <a href="https://github.com/gauri-dhanakshirur/CFS-Simulation/tree/main/CFS" target="_blank"
+                class="btn-source">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                </svg>
+                View Source Code
+            </a>
+        </div>
+
+        <section class="content-section">
+            <h2>Introduction to CFS</h2>
+            <p>
+                The <strong>Completely Fair Scheduler (CFS)</strong> is the default process scheduler in the Linux
+                kernel,
+                responsible for deciding which process gets to use the CPU at any given moment. Designed by Ingo Molnár
+                in 2007, CFS replaced the older O(1) scheduler with an elegant mathematical approach to fairness.
+            </p>
+            <p>
+                The fundamental goal of CFS is to model an "ideal, perfect multitasking CPU" — one that could run
+                all processes simultaneously, with each process receiving an equal (or weighted) share of processing
+                power. Since a real CPU can only run one process at a time, CFS approximates this ideal by carefully
+                tracking how much CPU time each process has used and always running the process that has received
+                the <em>least</em> time so far.
+            </p>
+
+            <div class="info-box">
+                <strong>Key Insight:</strong>
+                <p>CFS doesn't give fixed time slices like Round Robin. Instead, it continuously tracks CPU usage
+                    and dynamically schedules the most "deserving" process — ensuring mathematically fair distribution.
+                </p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>The Core Concept: Virtual Runtime (vruntime)</h2>
+            <p>
+                The entire CFS algorithm revolves around a single number called <strong>virtual runtime
+                    (vruntime)</strong>.
+                Every process in the system has its own vruntime value that represents how much CPU time it has
+                "consumed" in weighted terms.
+            </p>
+
+            <h3>The Golden Rule</h3>
+            <div class="formula-box">
+                <div class="formula">Always schedule the process with the LOWEST vruntime</div>
+                <div class="formula-desc">
+                    This simple rule ensures that no process can monopolize the CPU — the process that has
+                    received the least execution time will always be selected next.
+                </div>
+            </div>
+
+            <h3>How vruntime Accumulates</h3>
+            <p>As a process runs, its vruntime increases according to:</p>
+            <div class="formula-box">
+                <div class="formula">vruntime += Δexec × (NICE_0_LOAD / weight)</div>
+                <div class="formula-desc">
+                    Where Δexec = actual execution time (nanoseconds), NICE_0_LOAD = 1024, weight = process weight based
+                    on nice value
+                </div>
+            </div>
+
+            <div class="example-box">
+                <h4>Worked Example: vruntime Calculation</h4>
+                <p><strong>Scenario:</strong> Process P1 has nice value 0 (weight = 1024) and runs for 10ms.</p>
+                <p><strong>Calculation:</strong></p>
+                <ul>
+                    <li>Δexec = 10,000,000 nanoseconds (10ms)</li>
+                    <li>weight = 1024 (nice 0)</li>
+                    <li>vruntime += 10,000,000 × (1024 / 1024) = <strong>10,000,000 ns</strong></li>
+                </ul>
+                <p><strong>Now consider P2 with nice value -5 (weight = 3121):</strong></p>
+                <ul>
+                    <li>vruntime += 10,000,000 × (1024 / 3121) = <strong>3,280,872 ns</strong></li>
+                </ul>
+                <p><strong>Result:</strong> P2's vruntime grows ~3× slower, so it gets scheduled more often! Higher
+                    priority processes accumulate vruntime slower.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>The Mathematics of Fairness</h2>
+
+            <h3>Weight Table (Nice Values to Weights)</h3>
+            <p>Each nice value (-20 to +19) maps to a specific weight. The weights are designed so that each
+                nice level represents approximately a 10% difference in CPU share:</p>
+
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Nice Value</th>
+                        <th>Weight</th>
+                        <th>vruntime Multiplier</th>
+                        <th>Relative CPU Share</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>-20 (Highest Priority)</td>
+                        <td>88761</td>
+                        <td>0.0115</td>
+                        <td>≈87× more than nice=0</td>
+                    </tr>
+                    <tr>
+                        <td>-10</td>
+                        <td>9548</td>
+                        <td>0.107</td>
+                        <td>≈9× more</td>
+                    </tr>
+                    <tr>
+                        <td>-5</td>
+                        <td>3121</td>
+                        <td>0.328</td>
+                        <td>≈3× more</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>0 (Default)</td>
+                        <td>1024</td>
+                        <td>1.000</td>
+                        <td>1× (baseline)</td>
+                    </tr>
+                    <tr>
+                        <td>+5</td>
+                        <td>335</td>
+                        <td>3.057</td>
+                        <td>≈0.33× (third)</td>
+                    </tr>
+                    <tr>
+                        <td>+10</td>
+                        <td>110</td>
+                        <td>9.309</td>
+                        <td>≈0.11× (tenth)</td>
+                    </tr>
+                    <tr>
+                        <td>+19 (Lowest Priority)</td>
+                        <td>15</td>
+                        <td>68.27</td>
+                        <td>≈0.015×</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Calculating Fair Share</h3>
+            <p>For N processes with weights w₁, w₂, ..., wₙ, the fair CPU share for process i is:</p>
+            <div class="formula-box">
+                <div class="formula">CPU Share(i) = wᵢ / Σwⱼ</div>
+                <div class="formula-desc">
+                    Each process gets CPU time proportional to its weight relative to all other processes
+                </div>
+            </div>
+
+            <div class="example-box">
+                <h4>Worked Example: Fair Share Calculation</h4>
+                <p><strong>Scenario:</strong> 3 processes with weights:</p>
+                <ul>
+                    <li>P1: weight = 2048 (nice = -1)</li>
+                    <li>P2: weight = 1024 (nice = 0)</li>
+                    <li>P3: weight = 512 (nice = +1)</li>
+                </ul>
+                <p><strong>Total weight:</strong> 2048 + 1024 + 512 = 3584</p>
+                <p><strong>Fair shares:</strong></p>
+                <ul>
+                    <li>P1: 2048/3584 = 57.1% CPU</li>
+                    <li>P2: 1024/3584 = 28.6% CPU</li>
+                    <li>P3: 512/3584 = 14.3% CPU</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Data Structure: Red-Black Tree</h2>
+            <p>
+                CFS uses a <strong>self-balancing red-black tree</strong> to organize all runnable processes,
+                sorted by their vruntime values. This choice of data structure is crucial for performance:
+            </p>
+
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Operation</th>
+                        <th>Time Complexity</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Find minimum vruntime</td>
+                        <td>O(1)</td>
+                        <td>Leftmost node is cached — instant lookup!</td>
+                    </tr>
+                    <tr>
+                        <td>Insert process</td>
+                        <td>O(log n)</td>
+                        <td>When a process becomes runnable</td>
+                    </tr>
+                    <tr>
+                        <td>Remove process</td>
+                        <td>O(log n)</td>
+                        <td>When a process blocks or terminates</td>
+                    </tr>
+                    <tr>
+                        <td>Update position</td>
+                        <td>O(log n)</td>
+                        <td>After running, reinsert with new vruntime</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box">
+                <strong>Why Red-Black Trees?</strong>
+                <p>With thousands of processes, we need efficient scheduling. A red-black tree guarantees O(log n)
+                    operations while staying balanced. The leftmost node (lowest vruntime) is always cached, making
+                    the most common operation — selecting the next process — instantaneous.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Step-by-Step Algorithm</h2>
+
+            <div class="step-box">
+                <span class="step-num">1</span>
+                <span class="step-title">New Process Arrives / Wakes Up</span>
+                <p>Set the process's vruntime to <code>max(its_old_vruntime, min_vruntime - small_bonus)</code>.
+                    This ensures new/waking processes get scheduled soon but don't have an unfair advantage.</p>
+            </div>
+
+            <div class="step-box">
+                <span class="step-num">2</span>
+                <span class="step-title">Select Next Process</span>
+                <p>Pick the process with the <strong>lowest vruntime</strong> from the red-black tree.
+                    This is the leftmost node (cached), so this operation is O(1).</p>
+            </div>
+
+            <div class="step-box">
+                <span class="step-num">3</span>
+                <span class="step-title">Execute Process</span>
+                <p>Run the selected process. While it runs, track the actual execution time (Δexec).</p>
+            </div>
+
+            <div class="step-box">
+                <span class="step-num">4</span>
+                <span class="step-title">Update vruntime</span>
+                <p>Calculate: <code>vruntime += Δexec × (NICE_0_LOAD / weight)</code>. Higher priority
+                    processes accumulate vruntime slower.</p>
+            </div>
+
+            <div class="step-box">
+                <span class="step-num">5</span>
+                <span class="step-title">Check for Preemption</span>
+                <p>If the current process's vruntime exceeds (min_vruntime + scheduling_latency/n_running),
+                    trigger a context switch to the new lowest-vruntime process.</p>
+            </div>
+
+            <div class="step-box">
+                <span class="step-num">6</span>
+                <span class="step-title">Rebalance Tree</span>
+                <p>Remove the process from its old position and reinsert it based on its new vruntime.
+                    This maintains the sorted property of the tree.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Handling Sleeping Processes</h2>
+            <p>
+                When a process sleeps (waiting for I/O, user input, timer, etc.), its vruntime doesn't change.
+                This creates a problem: when it wakes up, it might have a very low vruntime compared to processes
+                that were running, giving it an unfair CPU advantage.
+            </p>
+
+            <h3>The Solution: Sleeper Fairness</h3>
+            <div class="formula-box">
+                <div class="formula">wake_vruntime = max(old_vruntime, min_vruntime - sched_latency/2)</div>
+                <div class="formula-desc">
+                    Waking processes get a small bonus (half the scheduling latency) to ensure
+                    responsiveness, but are capped to prevent CPU monopolization.
+                </div>
+            </div>
+
+            <div class="example-box">
+                <h4>Worked Example: Wake-up vruntime</h4>
+                <p><strong>Scenario:</strong> Process P slept while others ran. Current tree state:</p>
+                <ul>
+                    <li>min_vruntime in tree = 50,000,000</li>
+                    <li>P's old vruntime = 30,000,000 (very old, slept long time)</li>
+                    <li>sched_latency = 6,000,000 ns (6ms)</li>
+                </ul>
+                <p><strong>Calculation:</strong></p>
+                <ul>
+                    <li>Half latency bonus = 6,000,000 / 2 = 3,000,000</li>
+                    <li>min_vruntime - bonus = 50,000,000 - 3,000,000 = 47,000,000</li>
+                    <li>wake_vruntime = max(30,000,000, 47,000,000) = <strong>47,000,000</strong></li>
+                </ul>
+                <p><strong>Result:</strong> P gets scheduled relatively soon (has lowest vruntime) but doesn't
+                    dominate for long since its vruntime is close to others.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Complete Scheduling Example</h2>
+            <p>Let's trace through a complete scheduling scenario:</p>
+
+            <div class="example-box">
+                <h4>Scenario Setup</h4>
+                <p><strong>Processes:</strong></p>
+                <ul>
+                    <li>P1: nice=0 (weight=1024), burst=30ms</li>
+                    <li>P2: nice=0 (weight=1024), burst=20ms</li>
+                    <li>P3: nice=5 (weight=335), burst=40ms</li>
+                </ul>
+                <p>All arrive at time 0. Scheduling latency = 6ms. Minimum granularity = 0.75ms.</p>
+            </div>
+
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Running</th>
+                        <th>P1 vruntime</th>
+                        <th>P2 vruntime</th>
+                        <th>P3 vruntime</th>
+                        <th>Decision</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0ms</td>
+                        <td>P1</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>All equal, pick P1 (first in tree)</td>
+                    </tr>
+                    <tr>
+                        <td>2ms</td>
+                        <td>P1→P2</td>
+                        <td>2</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>P2/P3 have lower vruntime, switch</td>
+                    </tr>
+                    <tr>
+                        <td>4ms</td>
+                        <td>P2→P3</td>
+                        <td>2</td>
+                        <td>2</td>
+                        <td>0</td>
+                        <td>P3 has lowest, switch to P3</td>
+                    </tr>
+                    <tr>
+                        <td>6ms</td>
+                        <td>P3→P1</td>
+                        <td>2</td>
+                        <td>2</td>
+                        <td>6.1</td>
+                        <td>P3's vruntime grew fast (low weight)</td>
+                    </tr>
+                    <tr>
+                        <td>...</td>
+                        <td>...</td>
+                        <td>...</td>
+                        <td>...</td>
+                        <td>...</td>
+                        <td>Pattern continues</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p><strong>Key observation:</strong> P1 and P2 (nice=0) get roughly equal CPU time. P3 (nice=5)
+                gets about 1/3 as much because its vruntime accumulates ~3× faster due to lower weight.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Advantages & Disadvantages</h2>
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>Advantages</h4>
+                    <ul>
+                        <li>Mathematically fair CPU distribution</li>
+                        <li>Excellent interactive responsiveness</li>
+                        <li>No starvation — every process eventually runs</li>
+                        <li>O(log n) scheduling with O(1) next-process selection</li>
+                        <li>Handles priority gracefully via weights</li>
+                        <li>Scales well with many processes</li>
+                        <li>Sleeper fairness for I/O-bound processes</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>Disadvantages</h4>
+                    <ul>
+                        <li>More complex than simple Round Robin</li>
+                        <li>Red-black tree has overhead</li>
+                        <li>Not designed for hard real-time</li>
+                        <li>vruntime can overflow (handled carefully)</li>
+                        <li>Tuning parameters can be complex</li>
+                        <li>Group scheduling adds complexity</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Comparison with Other Schedulers</h2>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>CFS</th>
+                        <th>Round Robin</th>
+                        <th>Priority</th>
+                        <th>MLFQ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Fairness</td>
+                        <td>⭐⭐⭐⭐⭐</td>
+                        <td>⭐⭐⭐⭐</td>
+                        <td>⭐⭐⭐</td>
+                        <td>⭐⭐⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td>Responsiveness</td>
+                        <td>⭐⭐⭐⭐⭐</td>
+                        <td>⭐⭐⭐⭐</td>
+                        <td>⭐⭐⭐⭐</td>
+                        <td>⭐⭐⭐⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td>Starvation-Free</td>
+                        <td>Yes</td>
+                        <td>Yes</td>
+                        <td>No (without aging)</td>
+                        <td>Yes (with boost)</td>
+                    </tr>
+                    <tr>
+                        <td>Priority Support</td>
+                        <td>Weighted vruntime</td>
+                        <td>No</td>
+                        <td>Static/Dynamic</td>
+                        <td>Multiple queues</td>
+                    </tr>
+                    <tr>
+                        <td>Time Complexity</td>
+                        <td>O(log n)</td>
+                        <td>O(1)</td>
+                        <td>O(n)</td>
+                        <td>O(1)</td>
+                    </tr>
+                    <tr>
+                        <td>Implementation</td>
+                        <td>Red-black tree</td>
+                        <td>Circular queue</td>
+                        <td>Priority queue</td>
+                        <td>Multiple queues</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+</body>
+
+</html>

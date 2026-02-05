@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RR - Round Robin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-y: auto;
+            background: #f1f5f9;
+        }
+
+        .algo-page {
+            padding: 2rem 3rem 5rem 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .algo-hero {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            position: relative;
+            border: 3px solid #d97706;
+        }
+
+        .algo-hero h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .algo-hero .subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .btn-source {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-source:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-source svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            border: 2px solid #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .content-section h2 {
+            color: #d97706;
+            margin-bottom: 1.25rem;
+            font-size: 1.5rem;
+            border-bottom: 3px solid #f59e0b;
+            padding-bottom: 0.75rem;
+        }
+
+        .content-section h3 {
+            color: #1e293b;
+            margin: 1.5rem 0 1rem 0;
+            font-size: 1.2rem;
+        }
+
+        .content-section p {
+            line-height: 1.9;
+            color: #475569;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .content-section ul,
+        .content-section ol {
+            line-height: 1.9;
+            color: #475569;
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .content-section li {
+            margin-bottom: 0.75rem;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .formula-box .formula {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #b45309;
+            font-family: 'Courier New', monospace;
+        }
+
+        .formula-box .formula-desc {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-top: 0.75rem;
+            line-height: 1.6;
+        }
+
+        .example-box {
+            background: #fffbeb;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .example-box h4 {
+            color: #b45309;
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+        }
+
+        .example-box p,
+        .example-box li {
+            color: #78350f;
+        }
+
+        .math-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .math-table th,
+        .math-table td {
+            border: 2px solid #cbd5e1;
+            padding: 0.75rem 1rem;
+            text-align: center;
+        }
+
+        .math-table th {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .math-table tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .math-table .highlight-row {
+            background: #fef3c7 !important;
+            font-weight: 600;
+        }
+
+        .step-box {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 0.75rem 0;
+        }
+
+        .step-box .step-num {
+            display: inline-block;
+            background: #22c55e;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: 700;
+            margin-right: 0.75rem;
+        }
+
+        .step-box .step-title {
+            font-weight: 600;
+            color: #166534;
+        }
+
+        .step-box p {
+            margin: 0.5rem 0 0 2.5rem;
+            color: #166534;
+        }
+
+        .warning-box {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+        }
+
+        .warning-box strong {
+            color: #b91c1c;
+        }
+
+        .warning-box p {
+            color: #991b1b;
+            margin: 0;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+        }
+
+        .info-box strong {
+            color: #1d4ed8;
+        }
+
+        .info-box p {
+            color: #1e40af;
+            margin: 0;
+        }
+
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .pros,
+        .cons {
+            padding: 1.25rem;
+            border-radius: 12px;
+        }
+
+        .pros {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+        }
+
+        .cons {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+        }
+
+        .pros h4 {
+            color: #16a34a;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .cons h4 {
+            color: #dc2626;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .pros ul,
+        .cons ul {
+            margin: 0;
+            padding-left: 1.25rem;
+        }
+
+        .pros li,
+        .cons li {
+            margin-bottom: 0.5rem;
+            color: #475569;
+        }
+
+        .gantt-visual {
+            display: flex;
+            margin: 1rem 0;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .gantt-block {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 0;
+            font-size: 0.8rem;
+            min-width: 30px;
+        }
+
+        .gantt-timeline {
+            display: flex;
+            margin-top: 0.25rem;
+            font-size: 0.7rem;
+            color: #64748b;
+        }
+
+        code {
+            background: #e2e8f0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            border: 1px solid #cbd5e1;
+        }
+
+        .tq-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .tq-card {
+            padding: 1.25rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .tq-card h4 {
+            margin: 0 0 0.5rem 0;
+        }
+
+        .tq-card p {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+        }
+
+        .tq-small {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+        }
+
+        .tq-small h4 {
+            color: #b91c1c;
+        }
+
+        .tq-large {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+        }
+
+        .tq-large h4 {
+            color: #b45309;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="algo-page">
+        <a href="/" class="back-link">← Back to Simulator</a>
+
+        <div class="algo-hero">
+            <h1>Round Robin (RR)</h1>
+            <p class="subtitle">Fair Time-Sharing with Fixed Time Quantums</p>
+            <a href="https://github.com/gauri-dhanakshirur/CFS-Simulation/tree/main/RR" target="_blank"
+                class="btn-source">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                </svg>
+                View Source Code
+            </a>
+        </div>
+
+        <section class="content-section">
+            <h2>Introduction to Round Robin</h2>
+            <p>
+                <strong>Round Robin (RR)</strong> is one of the oldest and most widely used CPU scheduling algorithms,
+                designed specifically for time-sharing systems. Each process gets a small unit of CPU time called a
+                <strong>time quantum (TQ)</strong> or time slice.
+            </p>
+            <p>
+                If a process doesn't complete within its time quantum, it is <strong>preempted</strong> (paused) and
+                moved to the back of the ready queue. The next process then gets its turn. This continues in a
+                circular fashion until all processes complete.
+            </p>
+
+            <div class="info-box">
+                <strong>💡 Key Property:</strong>
+                <p>Round Robin is preemptive and provides guaranteed response time. If there are n processes and
+                    the time quantum is q, each process gets 1/n of the CPU in chunks of at most q time units.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Mathematical Formulas</h2>
+
+            <h3>Time Quantum Selection</h3>
+            <div class="formula-box">
+                <div class="formula">Execution Per Turn = min(Remaining Burst, Time Quantum)</div>
+                <div class="formula-desc">
+                    Each process runs for at most TQ time units before yielding
+                </div>
+            </div>
+
+            <h3>Number of Context Switches</h3>
+            <div class="formula-box">
+                <div class="formula">Context Switches ≈ Σ⌈Burst<sub>i</sub> / TQ⌉ - 1</div>
+                <div class="formula-desc">
+                    Total context switches depends on how many times processes exceed the quantum
+                </div>
+            </div>
+
+            <h3>Response Time Guarantee</h3>
+            <div class="formula-box">
+                <div class="formula">Max Response Time = (n - 1) × q</div>
+                <div class="formula-desc">
+                    Where n = number of processes and q = time quantum. Every process starts within this time.
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Choosing the Right Time Quantum</h2>
+            <p>The time quantum is the most critical parameter in Round Robin. The wrong choice can severely
+                impact performance:</p>
+
+            <div class="tq-comparison">
+                <div class="tq-card tq-small">
+                    <h4>❌ TQ Too Small</h4>
+                    <p>High context switch overhead</p>
+                    <p>CPU spends time switching, not executing</p>
+                    <p>Poor throughput</p>
+                    <p>Many cache misses</p>
+                </div>
+                <div class="tq-card tq-large">
+                    <h4>❌ TQ Too Large</h4>
+                    <p>Degenerates to FCFS</p>
+                    <p>Poor response time</p>
+                    <p>Short jobs wait too long</p>
+                    <p>Loses fairness benefits</p>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Rule of Thumb:</strong>
+                <p>Choose TQ so that about 80% of CPU bursts complete within one quantum.
+                    Typical values: 10-100 milliseconds in modern systems.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Step-by-Step Algorithm</h2>
+
+            <div class="step-box">
+                <span class="step-num">1</span>
+                <span class="step-title">Initialize Circular Queue</span>
+                <p>Create a circular ready queue. Set time quantum TQ.</p>
+            </div>
+
+            <div class="step-box">
+                <span class="step-num">2</span>
+                <span class="step-title">Enqueue Arriving Processes</span>
+                <p>Add new processes to the rear of the queue as they arrive.</p>
+            </div>
+
+            <div class="step-box">
+                <span class="step-num">3</span>
+                <span class="step-title">Dequeue Front Process</span>
+                <p>Take the process from the front of the queue.</p>
+            </div>
+
+            <div class="step-box">
+                <span class="step-num">4</span>
+                <span class="step-title">Execute for TQ or Until Complete</span>
+                <p>Run for min(remaining_burst, TQ). Update remaining_burst.</p>
+            </div>
+
+            <div class="step-box">
+                <span class="step-num">5</span>
+                <span class="step-title">Check Completion</span>
+                <p>If remaining_burst > 0, re-enqueue at rear. Otherwise, record completion time.</p>
+            </div>
+
+            <div class="step-box">
+                <span class="step-num">6</span>
+                <span class="step-title">Repeat Until All Complete</span>
+                <p>Continue until queue is empty and all processes done.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Detailed Example</h2>
+
+            <div class="example-box">
+                <h4>Problem Setup</h4>
+                <p>Given processes (all arrive at time 0) with <strong>Time Quantum = 4</strong>:</p>
+            </div>
+
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Process</th>
+                        <th>Arrival Time</th>
+                        <th>Burst Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>P1</td>
+                        <td>0</td>
+                        <td>24</td>
+                    </tr>
+                    <tr>
+                        <td>P2</td>
+                        <td>0</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td>P3</td>
+                        <td>0</td>
+                        <td>3</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Gantt Chart (TQ = 4)</h3>
+            <div class="gantt-visual">
+                <div class="gantt-block" style="flex: 4; background: #6366f1;">P1</div>
+                <div class="gantt-block" style="flex: 3; background: #ec4899;">P2</div>
+                <div class="gantt-block" style="flex: 3; background: #14b8a6;">P3</div>
+                <div class="gantt-block" style="flex: 4; background: #6366f1;">P1</div>
+                <div class="gantt-block" style="flex: 4; background: #6366f1;">P1</div>
+                <div class="gantt-block" style="flex: 4; background: #6366f1;">P1</div>
+                <div class="gantt-block" style="flex: 4; background: #6366f1;">P1</div>
+                <div class="gantt-block" style="flex: 4; background: #6366f1;">P1</div>
+            </div>
+
+            <h3>Execution Trace</h3>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Process</th>
+                        <th>Action</th>
+                        <th>P1 Rem</th>
+                        <th>P2 Rem</th>
+                        <th>P3 Rem</th>
+                        <th>Queue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0-4</td>
+                        <td>P1</td>
+                        <td>Runs 4, preempt</td>
+                        <td>20</td>
+                        <td>3</td>
+                        <td>3</td>
+                        <td>P2,P3,P1</td>
+                    </tr>
+                    <tr>
+                        <td>4-7</td>
+                        <td>P2</td>
+                        <td>Runs 3, completes</td>
+                        <td>20</td>
+                        <td>0</td>
+                        <td>3</td>
+                        <td>P3,P1</td>
+                    </tr>
+                    <tr>
+                        <td>7-10</td>
+                        <td>P3</td>
+                        <td>Runs 3, completes</td>
+                        <td>20</td>
+                        <td>-</td>
+                        <td>0</td>
+                        <td>P1</td>
+                    </tr>
+                    <tr>
+                        <td>10-14</td>
+                        <td>P1</td>
+                        <td>Runs 4</td>
+                        <td>16</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>P1</td>
+                    </tr>
+                    <tr>
+                        <td>14-18</td>
+                        <td>P1</td>
+                        <td>Runs 4</td>
+                        <td>12</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>P1</td>
+                    </tr>
+                    <tr>
+                        <td>18-22</td>
+                        <td>P1</td>
+                        <td>Runs 4</td>
+                        <td>8</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>P1</td>
+                    </tr>
+                    <tr>
+                        <td>22-26</td>
+                        <td>P1</td>
+                        <td>Runs 4</td>
+                        <td>4</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>P1</td>
+                    </tr>
+                    <tr>
+                        <td>26-30</td>
+                        <td>P1</td>
+                        <td>Runs 4, completes</td>
+                        <td>0</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>Empty</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Final Results</h3>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Process</th>
+                        <th>AT</th>
+                        <th>BT</th>
+                        <th>CT</th>
+                        <th>TAT</th>
+                        <th>WT</th>
+                        <th>RT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>P1</td>
+                        <td>0</td>
+                        <td>24</td>
+                        <td>30</td>
+                        <td>30</td>
+                        <td>6</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>P2</td>
+                        <td>0</td>
+                        <td>3</td>
+                        <td>7</td>
+                        <td>7</td>
+                        <td>4</td>
+                        <td>4</td>
+                    </tr>
+                    <tr>
+                        <td>P3</td>
+                        <td>0</td>
+                        <td>3</td>
+                        <td>10</td>
+                        <td>10</td>
+                        <td>7</td>
+                        <td>7</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td colspan="4"><strong>Averages</strong></td>
+                        <td><strong>15.67</strong></td>
+                        <td><strong>5.67</strong></td>
+                        <td><strong>3.67</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="example-box">
+                <h4>Comparison: FCFS vs Round Robin</h4>
+                <table class="math-table">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>FCFS</th>
+                            <th>Round Robin (TQ=4)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Avg Waiting Time</td>
+                            <td>16 ms</td>
+                            <td><strong>5.67 ms</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Avg Response Time</td>
+                            <td>16 ms</td>
+                            <td><strong>3.67 ms</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Avg Turnaround</td>
+                            <td>26 ms</td>
+                            <td><strong>15.67 ms</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p><strong>Result:</strong> Round Robin dramatically improved all metrics for these short processes!</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Advantages & Disadvantages</h2>
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>Advantages</h4>
+                    <ul>
+                        <li>Fair — every process gets equal CPU time</li>
+                        <li>No starvation — guaranteed response time</li>
+                        <li>Good for interactive systems</li>
+                        <li>Simple to implement (circular queue)</li>
+                        <li>Low response time for short processes</li>
+                        <li>Works well with mixed workloads</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>Disadvantages</h4>
+                    <ul>
+                        <li>Context switch overhead</li>
+                        <li>TQ selection is critical</li>
+                        <li>Higher average TAT than SJF</li>
+                        <li>No priority support</li>
+                        <li>Not suitable for real-time</li>
+                        <li>Performance depends heavily on TQ choice</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>

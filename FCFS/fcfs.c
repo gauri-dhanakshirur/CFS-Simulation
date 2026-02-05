@@ -22,7 +22,13 @@ void run_fcfs(Process p[], int n) {
         p[i].start_time = current_time;
         p[i].rt = p[i].start_time - p[i].at;
         
+        // Log Gantt event - FCFS has solid blocks (no preemption)
+        int gantt_start = current_time;
+        
         current_time += p[i].bt;
+        
+        // Log the complete execution block
+        add_gantt_event(p[i].pid, gantt_start, current_time);
         
         p[i].ct = current_time;
         p[i].tat = p[i].ct - p[i].at;
@@ -32,3 +38,4 @@ void run_fcfs(Process p[], int n) {
     }
     print_table(p, n, "FCFS Scheduling");
 }
+

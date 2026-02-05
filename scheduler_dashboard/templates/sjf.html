@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SJF / SRTF - Shortest Job First</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-y: auto;
+            background: #f1f5f9;
+        }
+
+        .algo-page {
+            padding: 2rem 3rem 5rem 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .algo-hero {
+            background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            position: relative;
+            border: 3px solid #be185d;
+        }
+
+        .algo-hero h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .algo-hero .subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .btn-source {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-source:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-source svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            border: 2px solid #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .content-section h2 {
+            color: #be185d;
+            margin-bottom: 1.25rem;
+            font-size: 1.5rem;
+            border-bottom: 3px solid #ec4899;
+            padding-bottom: 0.75rem;
+        }
+
+        .content-section h3 {
+            color: #1e293b;
+            margin: 1.5rem 0 1rem 0;
+            font-size: 1.2rem;
+        }
+
+        .content-section p {
+            line-height: 1.9;
+            color: #475569;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .content-section ul,
+        .content-section ol {
+            line-height: 1.9;
+            color: #475569;
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .content-section li {
+            margin-bottom: 0.75rem;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+            border: 2px solid #ec4899;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .formula-box .formula {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #9d174d;
+            font-family: 'Courier New', monospace;
+        }
+
+        .formula-box .formula-desc {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-top: 0.75rem;
+            line-height: 1.6;
+        }
+
+        .example-box {
+            background: #fffbeb;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .example-box h4 {
+            color: #b45309;
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+        }
+
+        .example-box p,
+        .example-box li {
+            color: #78350f;
+        }
+
+        .math-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .math-table th,
+        .math-table td {
+            border: 2px solid #cbd5e1;
+            padding: 0.75rem 1rem;
+            text-align: center;
+        }
+
+        .math-table th {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .math-table tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .math-table .highlight-row {
+            background: #fef3c7 !important;
+            font-weight: 600;
+        }
+
+        .step-box {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 0.75rem 0;
+        }
+
+        .step-box .step-num {
+            display: inline-block;
+            background: #22c55e;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: 700;
+            margin-right: 0.75rem;
+        }
+
+        .step-box .step-title {
+            font-weight: 600;
+            color: #166534;
+        }
+
+        .step-box p {
+            margin: 0.5rem 0 0 2.5rem;
+            color: #166534;
+        }
+
+        .warning-box {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+        }
+
+        .warning-box strong {
+            color: #b91c1c;
+        }
+
+        .warning-box p {
+            color: #991b1b;
+            margin: 0;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+        }
+
+        .info-box strong {
+            color: #1d4ed8;
+        }
+
+        .info-box p {
+            color: #1e40af;
+            margin: 0;
+        }
+
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .pros,
+        .cons {
+            padding: 1.25rem;
+            border-radius: 12px;
+        }
+
+        .pros {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+        }
+
+        .cons {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+        }
+
+        .pros h4 {
+            color: #16a34a;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .cons h4 {
+            color: #dc2626;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .pros ul,
+        .cons ul {
+            margin: 0;
+            padding-left: 1.25rem;
+        }
+
+        .pros li,
+        .cons li {
+            margin-bottom: 0.5rem;
+            color: #475569;
+        }
+
+        .gantt-visual {
+            display: flex;
+            margin: 1rem 0;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .gantt-block {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 0;
+            font-size: 0.85rem;
+        }
+
+        .variant-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .variant-card {
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid;
+        }
+
+        .variant-card.sjf {
+            background: #fdf2f8;
+            border-color: #f9a8d4;
+        }
+
+        .variant-card.srtf {
+            background: #fce7f3;
+            border-color: #ec4899;
+        }
+
+        .variant-card h4 {
+            margin: 0 0 1rem 0;
+            color: #9d174d;
+        }
+
+        code {
+            background: #e2e8f0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            border: 1px solid #cbd5e1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="algo-page">
+        <a href="/" class="back-link">← Back to Simulator</a>
+
+        <div class="algo-hero">
+            <h1>Shortest Job First (SJF / SRTF)</h1>
+            <p class="subtitle">Optimal Average Waiting Time Algorithm</p>
+            <a href="https://github.com/gauri-dhanakshirur/CFS-Simulation/tree/main/SJF" target="_blank"
+                class="btn-source">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                </svg>
+                View Source Code
+            </a>
+        </div>
+
+        <section class="content-section">
+            <h2>Introduction to SJF</h2>
+            <p>
+                <strong>Shortest Job First (SJF)</strong>, also known as Shortest Job Next (SJN), is a scheduling
+                algorithm that selects the process with the smallest CPU burst time to execute next. It is
+                <strong>provably optimal</strong> for minimizing average waiting time.
+            </p>
+            <p>
+                SJF comes in two variants: <strong>Non-preemptive SJF</strong> (process runs to completion) and
+                <strong>Preemptive SJF</strong>, also known as <strong>Shortest Remaining Time First (SRTF)</strong>,
+                which can interrupt a running process if a new process with shorter burst time arrives.
+            </p>
+
+            <div class="info-box">
+                <strong>Mathematical Proof of Optimality:</strong>
+                <p>SJF minimizes average waiting time because executing short jobs first reduces the cumulative
+                    waiting time for all subsequent jobs. Any other order would result in higher total wait.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Mathematical Formulas</h2>
+
+            <h3>Selection Criterion</h3>
+            <div class="formula-box">
+                <div class="formula">Next Process = arg min(Burst Time)</div>
+                <div class="formula-desc">
+                    Among all ready processes, select the one with minimum burst time
+                </div>
+            </div>
+
+            <h3>For SRTF (Preemptive)</h3>
+            <div class="formula-box">
+                <div class="formula">Next Process = arg min(Remaining Burst Time)</div>
+                <div class="formula-desc">
+                    At any scheduling point, run the process with least remaining burst
+                </div>
+            </div>
+
+            <h3>Burst Time Prediction (Exponential Averaging)</h3>
+            <div class="formula-box">
+                <div class="formula">τ<sub>n+1</sub> = α × t<sub>n</sub> + (1 - α) × τ<sub>n</sub></div>
+                <div class="formula-desc">
+                    τ = predicted burst, t = actual burst, α = smoothing factor (typically 0.5)<br>
+                    This formula predicts future bursts based on past behavior.
+                </div>
+            </div>
+
+            <div class="example-box">
+                <h4>Burst Prediction Example</h4>
+                <p>Let α = 0.5, τ₀ = 10ms (initial guess)</p>
+                <ul>
+                    <li>Actual burst t₀ = 6ms</li>
+                    <li>τ₁ = 0.5 × 6 + 0.5 × 10 = <strong>8ms</strong></li>
+                    <li>Actual burst t₁ = 4ms</li>
+                    <li>τ₂ = 0.5 × 4 + 0.5 × 8 = <strong>6ms</strong></li>
+                    <li>Actual burst t₂ = 6ms</li>
+                    <li>τ₃ = 0.5 × 6 + 0.5 × 6 = <strong>6ms</strong> (converging!)</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>SJF vs SRTF Comparison</h2>
+
+            <div class="variant-comparison">
+                <div class="variant-card sjf">
+                    <h4>Non-Preemptive SJF</h4>
+                    <ul>
+                        <li>Once a process starts, it runs to completion</li>
+                        <li>Decision made only when CPU becomes idle</li>
+                        <li>Lower overhead (no preemption)</li>
+                        <li>Better for batch systems</li>
+                        <li>Can delay newly arrived short jobs</li>
+                    </ul>
+                </div>
+                <div class="variant-card srtf">
+                    <h4>Preemptive SRTF</h4>
+                    <ul>
+                        <li>Can preempt running process</li>
+                        <li>Decision at every process arrival</li>
+                        <li>Context switch overhead</li>
+                        <li>Better for interactive systems</li>
+                        <li>Truly optimal for avg. wait time</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Detailed Example: Non-Preemptive SJF</h2>
+
+            <div class="example-box">
+                <h4>Problem Setup</h4>
+                <p>Given processes:</p>
+            </div>
+
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Process</th>
+                        <th>Arrival Time</th>
+                        <th>Burst Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>P1</td>
+                        <td>0</td>
+                        <td>7</td>
+                    </tr>
+                    <tr>
+                        <td>P2</td>
+                        <td>2</td>
+                        <td>4</td>
+                    </tr>
+                    <tr>
+                        <td>P3</td>
+                        <td>4</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td>P4</td>
+                        <td>5</td>
+                        <td>4</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Execution Trace (Non-Preemptive SJF)</h3>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Event</th>
+                        <th>Ready Queue</th>
+                        <th>Running</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0</td>
+                        <td>P1 arrives</td>
+                        <td>{P1(7)}</td>
+                        <td>P1 starts</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>P2 arrives</td>
+                        <td>{P2(4)}</td>
+                        <td>P1 continues</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>P3 arrives</td>
+                        <td>{P2(4), P3(1)}</td>
+                        <td>P1 continues</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>P4 arrives</td>
+                        <td>{P2(4), P3(1), P4(4)}</td>
+                        <td>P1 continues</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>P1 completes</td>
+                        <td>{P2(4), P3(1), P4(4)}</td>
+                        <td>P3 starts (shortest!)</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>P3 completes</td>
+                        <td>{P2(4), P4(4)}</td>
+                        <td>P2 starts (FCFS tie)</td>
+                    </tr>
+                    <tr>
+                        <td>12</td>
+                        <td>P2 completes</td>
+                        <td>{P4(4)}</td>
+                        <td>P4 starts</td>
+                    </tr>
+                    <tr>
+                        <td>16</td>
+                        <td>P4 completes</td>
+                        <td>Empty</td>
+                        <td>Done</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Gantt Chart</h3>
+            <div class="gantt-visual">
+                <div class="gantt-block" style="flex: 7; background: #6366f1;">P1 (0-7)</div>
+                <div class="gantt-block" style="flex: 1; background: #14b8a6;">P3 (7-8)</div>
+                <div class="gantt-block" style="flex: 4; background: #ec4899;">P2 (8-12)</div>
+                <div class="gantt-block" style="flex: 4; background: #f59e0b;">P4 (12-16)</div>
+            </div>
+
+            <h3>Final Calculations</h3>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Process</th>
+                        <th>AT</th>
+                        <th>BT</th>
+                        <th>CT</th>
+                        <th>TAT</th>
+                        <th>WT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>P1</td>
+                        <td>0</td>
+                        <td>7</td>
+                        <td>7</td>
+                        <td>7</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>P2</td>
+                        <td>2</td>
+                        <td>4</td>
+                        <td>12</td>
+                        <td>10</td>
+                        <td>6</td>
+                    </tr>
+                    <tr>
+                        <td>P3</td>
+                        <td>4</td>
+                        <td>1</td>
+                        <td>8</td>
+                        <td>4</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td>P4</td>
+                        <td>5</td>
+                        <td>4</td>
+                        <td>16</td>
+                        <td>11</td>
+                        <td>7</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td colspan="4"><strong>Averages</strong></td>
+                        <td><strong>8</strong></td>
+                        <td><strong>4</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="content-section">
+            <h2>Detailed Example: Preemptive SRTF</h2>
+            <p>Using the same processes, let's see how SRTF differs:</p>
+
+            <h3>Execution Trace (SRTF)</h3>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Event</th>
+                        <th>P1 Rem</th>
+                        <th>P2 Rem</th>
+                        <th>P3 Rem</th>
+                        <th>P4 Rem</th>
+                        <th>Running</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0</td>
+                        <td>P1 arrives</td>
+                        <td>7</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>P1</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>P2 arrives (4<5)< /td>
+                        <td>5</td>
+                        <td>4</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>P2 preempts!</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>P3 arrives (1<2)< /td>
+                        <td>5</td>
+                        <td>2</td>
+                        <td>1</td>
+                        <td>-</td>
+                        <td>P3 preempts!</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>P3 done, P4 arrives</td>
+                        <td>5</td>
+                        <td>2</td>
+                        <td>0</td>
+                        <td>4</td>
+                        <td>P2 (2<4<5)< /td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>P2 completes</td>
+                        <td>5</td>
+                        <td>0</td>
+                        <td>-</td>
+                        <td>4</td>
+                        <td>P4 (4<5)< /td>
+                    </tr>
+                    <tr>
+                        <td>11</td>
+                        <td>P4 completes</td>
+                        <td>5</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>0</td>
+                        <td>P1</td>
+                    </tr>
+                    <tr>
+                        <td>16</td>
+                        <td>P1 completes</td>
+                        <td>0</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>Done</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Final Comparison: SJF vs SRTF</h3>
+            <table class="math-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Non-Preemptive SJF</th>
+                        <th>Preemptive SRTF</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Avg Waiting Time</td>
+                        <td>4 ms</td>
+                        <td><strong>3 ms</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Avg Turnaround</td>
+                        <td>8 ms</td>
+                        <td><strong>7 ms</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Context Switches</td>
+                        <td>3</td>
+                        <td>5</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="content-section">
+            <h2>Starvation Problem</h2>
+
+            <div class="warning-box">
+                <strong>Critical Issue:</strong>
+                <p>Long processes may wait indefinitely if shorter processes keep arriving. This is called
+                    <strong>starvation</strong> or "infinite blocking."
+                </p>
+            </div>
+
+            <h3>Solution: Aging</h3>
+            <div class="formula-box">
+                <div class="formula">Effective Burst = Burst Time - (Wait Time × Aging Factor)</div>
+                <div class="formula-desc">
+                    As a process waits longer, its effective burst time decreases, eventually
+                    making it the "shortest" job.
+                </div>
+            </div>
+
+            <div class="example-box">
+                <h4>Aging Example</h4>
+                <p>Process P has burst = 100ms, aging factor = 0.1</p>
+                <ul>
+                    <li>At wait=0: Effective = 100 - 0 = 100ms</li>
+                    <li>At wait=500ms: Effective = 100 - 50 = 50ms</li>
+                    <li>At wait=1000ms: Effective = 100 - 100 = 0ms (highest priority!)</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Advantages & Disadvantages</h2>
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>Advantages</h4>
+                    <ul>
+                        <li>Minimum average waiting time (optimal)</li>
+                        <li>Minimum average turnaround time</li>
+                        <li>Good for batch systems</li>
+                        <li>Prioritizes quick jobs</li>
+                        <li>High throughput for short jobs</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>Disadvantages</h4>
+                    <ul>
+                        <li>Starvation of long processes</li>
+                        <li>Requires knowing burst time in advance</li>
+                        <li>Prediction overhead and errors</li>
+                        <li>Not fair to all processes</li>
+                        <li>SRTF has preemption overhead</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>
